@@ -29,4 +29,21 @@ public class QuestionAndAnswer {
     public List<String> getPossibleAnswers() {
         return this.shufflePossibleAnswers();
     }
+
+    public boolean isCorrectAnswer(String givenAnswer) {
+        this.isAnswered = true;
+        return correctAnswer.equals(givenAnswer);
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    public boolean isAnswered() {
+        return this.isAnswered;
+    }
+
+    public String getQuestion() {
+        return this.question;
+    }
 }

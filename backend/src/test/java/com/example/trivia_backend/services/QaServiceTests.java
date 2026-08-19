@@ -1,5 +1,6 @@
 package com.example.trivia_backend.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
@@ -22,17 +23,7 @@ class QaServiceTests {
     @BeforeEach
     void beforeEach() {
         service.clearQuestionAndAnswers();
-    }
 
-    @Test
-    void serviceShouldHaveQASet() {
-        HashSet<QuestionAndAnswer> result = service.getQuestionsAndAnswers();
-
-        assertEquals(new HashSet<>(), result);
-    }
-
-    @Test
-    void serviceShouldAddQuestionAndAnswer() {
         String question = "Kiwi?";
         String correctAnswer = "Yes";
         List<String> possibleAnswers = new ArrayList<String>();
@@ -41,9 +32,7 @@ class QaServiceTests {
 
         QuestionAndAnswer qa = new QuestionAndAnswer(question, correctAnswer, possibleAnswers);
 
-        HashSet<QuestionAndAnswer> result = service.addQuestionAndAnswer(qa);
-
-        assertEquals(1, result.size());
+        service.addQuestionAndAnswer(qa);
     }
 
     @Test
@@ -55,10 +44,35 @@ class QaServiceTests {
         possibleAnswers.add(correctAnswer);
 
         QuestionAndAnswer qa = new QuestionAndAnswer(question, correctAnswer, possibleAnswers);
-
-        service.addQuestionAndAnswer(qa);
         HashSet<QuestionAndAnswer> result = service.addQuestionAndAnswer(qa);
 
-        assertEquals(1, result.size());
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void serviceShouldEvaluateAnswer() {
+        QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
+
+        boolean result = service.validateAnswer(questionAndAnswer.getId(), "Yes");
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void serviceShouldSetQuestionAsAnsweredAfterEvaluatingAnswer() {
+        QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
+
+        service.validateAnswer(questionAndAnswer.getId(), "Yes");
+
+        QuestionAndAnswer updatedQuestionAndAnswer = service.getFirstQuestion();
+
+        assertThat(updatedQuestionAndAnswer.isAnswered()).isTrue();
+    }
+
+    @Test
+    void serviceShouldEvaluateAnswerThrowsNull() {
+        boolean result = service.validateAnswer("Swagbaas", "Kiwi 1");
+
+        assertThat(result).isFalse();
     }
 }
