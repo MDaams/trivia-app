@@ -1,9 +1,8 @@
 package com.example.trivia_backend.services;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -22,17 +21,7 @@ class QaServiceTests {
     @BeforeEach
     void beforeEach() {
         service.clearQuestionAndAnswers();
-    }
 
-    @Test
-    void serviceShouldHaveQASet() {
-        HashSet<QuestionAndAnswer> result = service.getQuestionsAndAnswers();
-
-        assertEquals(new HashSet<>(), result);
-    }
-
-    @Test
-    void serviceShouldAddQuestionAndAnswer() {
         String question = "Kiwi?";
         String correctAnswer = "Yes";
         List<String> possibleAnswers = new ArrayList<String>();
@@ -41,9 +30,7 @@ class QaServiceTests {
 
         QuestionAndAnswer qa = new QuestionAndAnswer(question, correctAnswer, possibleAnswers);
 
-        HashSet<QuestionAndAnswer> result = service.addQuestionAndAnswer(qa);
-
-        assertEquals(1, result.size());
+        service.addQuestionAndAnswer(qa);
     }
 
     @Test
@@ -55,10 +42,44 @@ class QaServiceTests {
         possibleAnswers.add(correctAnswer);
 
         QuestionAndAnswer qa = new QuestionAndAnswer(question, correctAnswer, possibleAnswers);
+        List<QuestionAndAnswer> result = service.addQuestionAndAnswer(qa);
 
-        service.addQuestionAndAnswer(qa);
-        HashSet<QuestionAndAnswer> result = service.addQuestionAndAnswer(qa);
+        assertThat(result).hasSize(1);
+    }
 
-        assertEquals(1, result.size());
+    @Test
+    void serviceShouldEvaluateAnswer() {
+        QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
+
+        boolean result = service.evaluateAnswer(questionAndAnswer.getId(), "Yes");
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void serviceShouldSetQuestionAsAnsweredAfterEvaluatingAnswer() {
+        QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
+
+        service.evaluateAnswer(questionAndAnswer.getId(), "Yes");
+
+        QuestionAndAnswer updatedQuestionAndAnswer = service.getFirstQuestion();
+
+        assertThat(updatedQuestionAndAnswer.isAnswered()).isTrue();
+    }
+
+    @Test
+    void serviceShouldEvaluateAnswerThrowsNull() {
+        boolean result = service.evaluateAnswer("Swagbaas", "Kiwi 1");
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void getFirstQuestionReturnsNullWhenListIsEmpty() {
+        service.clearQuestionAndAnswers();
+
+        QuestionAndAnswer qa = service.getFirstQuestion();
+
+        assertThat(qa).isNull();
     }
 }

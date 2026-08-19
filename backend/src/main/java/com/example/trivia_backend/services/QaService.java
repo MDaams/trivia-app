@@ -1,36 +1,85 @@
 package com.example.trivia_backend.services;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.example.trivia_backend.models.QuestionAndAnswer;
 
-// Responsible for tracking Quiz
 @Service
 public class QaService {
-    private HashSet<QuestionAndAnswer> questionsAndAnswers;
+    private List<QuestionAndAnswer> questionsAndAnswers;
 
     public QaService() {
-        questionsAndAnswers = new HashSet<>();
+        questionsAndAnswers = new ArrayList<>();
     }
 
-    public HashSet<QuestionAndAnswer> getQuestionsAndAnswers() {
+    public List<QuestionAndAnswer> getQuestionsAndAnswers() {
         return questionsAndAnswers;
     }
 
-    public HashSet<QuestionAndAnswer> addQuestionAndAnswer(QuestionAndAnswer qa) {
-        HashSet<QuestionAndAnswer> updatedQuestionAndAnswers = new HashSet<>(this.questionsAndAnswers);
+    private void setQuestionAndAnswers(List<QuestionAndAnswer> updatedQuestionAndAnswers) {
+        this.questionsAndAnswers = updatedQuestionAndAnswers;
+    }
+
+    private QuestionAndAnswer findById(String id) {
+        for (QuestionAndAnswer qa : questionsAndAnswers) {
+            if (qa.getId().equals(id)) {
+                return qa;
+            }
+        }
+        return null;
+    }
+
+    private QuestionAndAnswer findByQuestion(String question) {
+        for (QuestionAndAnswer qa : questionsAndAnswers) {
+            if (qa.getQuestion().equals(question)) {
+                return qa;
+            }
+        }
+        return null;
+    }
+
+    private boolean isExistingQuestion(String question) {
+        return findByQuestion(question) != null;
+    }
+
+    public List<QuestionAndAnswer> addQuestionAndAnswer(QuestionAndAnswer qa) {
+        if (isExistingQuestion(qa.getQuestion())) {
+            return this.getQuestionsAndAnswers();
+        }
+
+        List<QuestionAndAnswer> updatedQuestionAndAnswers = new ArrayList<>(this.getQuestionsAndAnswers());
 
         updatedQuestionAndAnswers.add(qa);
 
-        this.questionsAndAnswers = updatedQuestionAndAnswers;
+        this.setQuestionAndAnswers(updatedQuestionAndAnswers);
 
-        return this.questionsAndAnswers;
+        return this.getQuestionsAndAnswers();
     }
 
     public void clearQuestionAndAnswers() {
-        this.questionsAndAnswers.clear();
+        this.questionsAndAnswers = new ArrayList<>();
     }
 
+    public QuestionAndAnswer getFirstQuestion() {
+        List<QuestionAndAnswer> questionAndAnswers = new ArrayList<>(this.getQuestionsAndAnswers());
+
+        if (questionAndAnswers.size() == 0) {
+            return null;
+        }
+
+        return questionAndAnswers.get(0);
+    }
+
+    public boolean evaluateAnswer(String id, String givenAnswer) {
+        QuestionAndAnswer questionAndAnswer = this.findById(id);
+
+        if (questionAndAnswer == null) {
+            return false;
+        }
+
+        return questionAndAnswer.isCorrectAnswer(givenAnswer);
+    }
 }
