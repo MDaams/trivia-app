@@ -2,13 +2,10 @@ package com.example.trivia_backend.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.restclient.test.autoconfigure.RestClientTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.client.MockRestServiceServer;
 
 import com.example.trivia_backend.dtos.TriviaAPIResponseDTO;
@@ -37,9 +34,9 @@ public class TriviaAPIServiceTest {
                   "response_code": 0,
                   "results": [
                     {
-                      "question": "Test question?",
-                      "correct_answer": "Yes",
-                      "incorrect_answers": ["No"]
+                      "question": "Kiwi?",
+                      "correct_answer": "Swagbaas",
+                      "incorrect_answers": ["dab"]
                     }
                   ]
                 }
@@ -48,7 +45,7 @@ public class TriviaAPIServiceTest {
         server.expect(requestTo("https://opentdb.com/api.php?amount=50"))
                 .andRespond(withSuccess(mockResponse, MediaType.APPLICATION_JSON));
         TriviaAPIResponseDTO triviaAPIResponseDTO = service.getQuestions();
-        assertThat(triviaAPIResponseDTO.results().get(0).question()).isEqualTo("Test question?");
+        assertThat(triviaAPIResponseDTO.results().get(0).question()).isEqualTo("Kiwi?");
     }
 
     @Test
