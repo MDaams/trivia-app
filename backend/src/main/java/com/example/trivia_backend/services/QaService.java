@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.trivia_backend.models.QuestionAndAnswer;
 
+// Responsible for tracking Quiz
 @Service
 public class QaService {
     private HashSet<QuestionAndAnswer> questionsAndAnswers;
