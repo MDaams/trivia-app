@@ -1,10 +1,8 @@
 package com.example.trivia_backend.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +42,7 @@ class QaServiceTests {
         possibleAnswers.add(correctAnswer);
 
         QuestionAndAnswer qa = new QuestionAndAnswer(question, correctAnswer, possibleAnswers);
-        HashSet<QuestionAndAnswer> result = service.addQuestionAndAnswer(qa);
+        List<QuestionAndAnswer> result = service.addQuestionAndAnswer(qa);
 
         assertThat(result).hasSize(1);
     }
@@ -53,7 +51,7 @@ class QaServiceTests {
     void serviceShouldEvaluateAnswer() {
         QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
 
-        boolean result = service.validateAnswer(questionAndAnswer.getId(), "Yes");
+        boolean result = service.evaluateAnswer(questionAndAnswer.getId(), "Yes");
 
         assertThat(result).isTrue();
     }
@@ -62,7 +60,7 @@ class QaServiceTests {
     void serviceShouldSetQuestionAsAnsweredAfterEvaluatingAnswer() {
         QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
 
-        service.validateAnswer(questionAndAnswer.getId(), "Yes");
+        service.evaluateAnswer(questionAndAnswer.getId(), "Yes");
 
         QuestionAndAnswer updatedQuestionAndAnswer = service.getFirstQuestion();
 
@@ -71,8 +69,17 @@ class QaServiceTests {
 
     @Test
     void serviceShouldEvaluateAnswerThrowsNull() {
-        boolean result = service.validateAnswer("Swagbaas", "Kiwi 1");
+        boolean result = service.evaluateAnswer("Swagbaas", "Kiwi 1");
 
         assertThat(result).isFalse();
+    }
+
+    @Test
+    void getFirstQuestionReturnsNullWhenListIsEmpty() {
+        service.clearQuestionAndAnswers();
+
+        QuestionAndAnswer qa = service.getFirstQuestion();
+
+        assertThat(qa).isNull();
     }
 }
