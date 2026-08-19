@@ -8,6 +8,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.example.trivia_backend.models.QuestionAndAnswer;
+
 @SpringBootTest
 class QuestionAndAnswerModelTest {
     @Test
