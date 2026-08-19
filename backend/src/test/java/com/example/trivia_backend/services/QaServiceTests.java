@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class QaServiceTests {
     void serviceShouldAddQuestionAndAnswer() {
         String question = "Kiwi?";
         String correctAnswer = "Yes";
-        ArrayList<String> possibleAnswers = new ArrayList<String>();
+        List<String> possibleAnswers = new ArrayList<String>();
         possibleAnswers.add("No");
         possibleAnswers.add(correctAnswer);
 
@@ -49,7 +50,7 @@ class QaServiceTests {
     void serviceShouldNotHoldDuplicateQuestions() {
         String question = "Kiwi?";
         String correctAnswer = "Yes";
-        ArrayList<String> possibleAnswers = new ArrayList<String>();
+        List<String> possibleAnswers = new ArrayList<String>();
         possibleAnswers.add("No");
         possibleAnswers.add(correctAnswer);
 
@@ -60,5 +61,4 @@ class QaServiceTests {
 
         assertEquals(1, result.size());
     }
-
 }
