@@ -2,6 +2,7 @@ package com.example.trivia_backend.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,32 +10,66 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.example.trivia_backend.dtos.TriviaAPIResponseDTO;
+import com.example.trivia_backend.dtos.TriviaAPIResponseDTO.TriviaQuestionDto;
 import com.example.trivia_backend.exceptions.QuestionNotFoundException;
 import com.example.trivia_backend.models.QuestionAndAnswer;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class QaServiceTests {
 
-    @Autowired
+    @InjectMocks
     private QaService service;
+
+    @Mock
+    private TriviaAPIService triviaAPIService;
 
     @BeforeEach
     void beforeEach() {
         service.clearQuestionAndAnswers();
 
-        String uuidString = UUID.randomUUID().toString();
-        String question = "Kiwi?";
-        String correctAnswer = "Yes";
-        List<String> possibleAnswers = new ArrayList<String>();
-        possibleAnswers.add("No");
-        possibleAnswers.add(correctAnswer);
+        TriviaQuestionDto triviaQuestionDto = new TriviaQuestionDto("Kiwi?", "Swagbaas", List.of("dab"));
+        List<TriviaQuestionDto> triviaQuestionDtos = new ArrayList<>(List.of(triviaQuestionDto));
+        TriviaAPIResponseDTO triviaAPIResponseDTO = new TriviaAPIResponseDTO(triviaQuestionDtos);
+        when(triviaAPIService.getQuestions()).thenReturn(triviaAPIResponseDTO);
 
-        QuestionAndAnswer qa = new QuestionAndAnswer(uuidString, question, correctAnswer, possibleAnswers);
+        service.fetchQuestions();
+    }
 
-        service.addQuestion(qa);
+    @Test
+    void shouldCombineCorrectAndIncorrectAnswers() {
+        QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
+
+        assertThat(questionAndAnswer.possibleAnswers()).contains("Swagbaas");
+        assertThat(questionAndAnswer.possibleAnswers()).contains("dab");
+    }
+
+    @Test
+    void fetchQuestionsClearsList() {
+        service.addQuestion(new QuestionAndAnswer("string", "swagbaas?", "dab", List.of("dab", "Kiwi")));
+        service.addQuestion(new QuestionAndAnswer("string", "dab?", "swagbaas", List.of("swagbaas", "Kiwi")));
+
+        service.fetchQuestions();
+
+        assertThat(service.getQuestionsAndAnswers()).hasSize(1);
+    }
+
+    @Test
+    void fetchQuestionsClearsContainsNewQuestion() {
+        service.clearQuestionAndAnswers();
+
+        service.addQuestion(new QuestionAndAnswer("string", "swagbaas?", "dab", List.of("dab", "Kiwi")));
+
+        assertThat(service.getFirstQuestion().question()).isEqualTo("swagbaas?");
+
+        service.fetchQuestions();
+
+        assertThat(service.getFirstQuestion().question()).isEqualTo("Kiwi?");
     }
 
     @Test
@@ -56,7 +91,7 @@ class QaServiceTests {
     void shouldEvaluateAnswer() {
         QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
 
-        boolean result = service.evaluateAnswer(questionAndAnswer.id(), "Yes");
+        boolean result = service.evaluateAnswer(questionAndAnswer.id(), "Swagbaas");
 
         assertThat(result).isTrue();
     }
