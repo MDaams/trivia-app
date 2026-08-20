@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.stereotype.Service;
 
+import com.example.trivia_backend.exceptions.QuestionNotFoundException;
 import com.example.trivia_backend.models.QuestionAndAnswer;
 
 @Service
@@ -72,7 +73,7 @@ public class QaService {
         QuestionAndAnswer questionAndAnswer = this.findById(id);
 
         if (questionAndAnswer == null) {
-            return false;
+            throw new QuestionNotFoundException("Question not found.");
         }
 
         deleteQuestionAndAnswers(questionAndAnswer);

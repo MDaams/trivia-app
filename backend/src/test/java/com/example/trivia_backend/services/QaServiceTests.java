@@ -1,6 +1,7 @@
 package com.example.trivia_backend.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.example.trivia_backend.exceptions.QuestionNotFoundException;
 import com.example.trivia_backend.models.QuestionAndAnswer;
 
 @SpringBootTest
@@ -36,7 +38,7 @@ class QaServiceTests {
     }
 
     @Test
-    void serviceShouldNotHoldDuplicateQuestions() {
+    void shouldAddDuplicateQuestions() {
         String uuidString = UUID.randomUUID().toString();
         String question = "Kiwi?";
         String correctAnswer = "Yes";
@@ -51,7 +53,7 @@ class QaServiceTests {
     }
 
     @Test
-    void serviceShouldEvaluateAnswer() {
+    void shouldEvaluateAnswer() {
         QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
 
         boolean result = service.evaluateAnswer(questionAndAnswer.id(), "Yes");
@@ -60,7 +62,7 @@ class QaServiceTests {
     }
 
     @Test
-    void serviceShouldDeleteQuestionAfterEvaluatingAnswer() {
+    void shouldDeleteQuestionAfterEvaluatingAnswer() {
         QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
 
         service.evaluateAnswer(questionAndAnswer.id(), "Yes");
@@ -69,14 +71,21 @@ class QaServiceTests {
     }
 
     @Test
-    void serviceShouldEvaluateAnswerThrowsNull() {
-        boolean result = service.evaluateAnswer("Swagbaas", "Kiwi 1");
+    void shouldReturnRuntimeExceptionWhenEvaluatingAnswerOnNonExistingQuestion() {
+        QuestionAndAnswer qa = service.getFirstQuestion();
 
-        assertThat(result).isFalse();
+        service.clearQuestionAndAnswers();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            service.evaluateAnswer(qa.id(), "dab");
+        });
+
+        assertThat(exception).isInstanceOf(QuestionNotFoundException.class);
+        assertThat(exception.getMessage()).isEqualTo("Question not found.");
     }
 
     @Test
-    void getFirstQuestionReturnsNullWhenListIsEmpty() {
+    void getFirstQuestionShouldReturnNullWhenListIsEmpty() {
         service.clearQuestionAndAnswers();
 
         QuestionAndAnswer qa = service.getFirstQuestion();
