@@ -16,7 +16,6 @@ public class TriviaAPIService {
 
     public TriviaAPIService(RestClient.Builder builder) {
         this.restClient = builder.baseUrl(BASE_URL).build();
-
     }
 
     public TriviaAPIResponseDTO getQuestions() {
