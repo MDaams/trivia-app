@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record TriviaAPIResponseDTO(
-                @JsonProperty("results") List<TriviaQuestionDto> results) {
-        public record TriviaQuestionDto(
+                @JsonProperty("results") List<TriviaAPIQuestion> results) {
+        public record TriviaAPIQuestion(
 
                         @JsonProperty("question") String question,
 

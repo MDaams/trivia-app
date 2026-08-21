@@ -2,22 +2,21 @@ package com.example.trivia_backend.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.restclient.test.autoconfigure.RestClientTest;
-import org.springframework.test.web.client.MockRestServiceServer;
-
-import com.example.trivia_backend.dtos.TriviaAPIResponseDTO;
-import com.example.trivia_backend.exceptions.RateLimitExceededException;
-
-import org.springframework.http.MediaType;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withResourceNotFound;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServiceUnavailable;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withTooManyRequests;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.restclient.test.autoconfigure.RestClientTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.client.MockRestServiceServer;
+
+import com.example.trivia_backend.dtos.TriviaAPIResponseDTO;
+import com.example.trivia_backend.exceptions.RateLimitExceededException;
 
 @RestClientTest(TriviaAPIService.class)
 public class TriviaAPIServiceTest {

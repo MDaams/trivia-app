@@ -1,6 +1,13 @@
 package com.example.trivia_backend.controllers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,17 +21,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.contains;
-
-import com.example.trivia_backend.dtos.AnswerResult;
-import com.example.trivia_backend.dtos.CheckAnswerRequestDTO;
-import com.example.trivia_backend.models.QuestionAndAnswer;
+import com.example.trivia_backend.dtos.checkAnswer.CheckAnswerRequestDTO;
+import com.example.trivia_backend.dtos.checkAnswer.CheckAnswersRequestDTO;
+import com.example.trivia_backend.exceptions.QuestionNotFoundException;
+import com.example.trivia_backend.records.EvaluationResult;
+import com.example.trivia_backend.records.TriviaQuestion;
 import com.example.trivia_backend.services.QaService;
 
 import tools.jackson.databind.ObjectMapper;
@@ -40,87 +41,45 @@ public class QaControllerTest {
         @Autowired
         private ObjectMapper objectMapper;
 
-        private QuestionAndAnswer mockQuestionAndAnswer;
+        private TriviaQuestion mockQuestionAndAnswer;
 
         @BeforeEach
         void beforeEach() {
-                mockQuestionAndAnswer = new QuestionAndAnswer("kiwi", "Kiwi?", "Swagbaas",
+                mockQuestionAndAnswer = new TriviaQuestion("kiwi", "Kiwi?", "Swagbaas",
                                 List.of("Swagbaas", "dab"));
         }
 
         @Test
         @DisplayName("Get /questions should return a list filled with questions and answers")
         void getQuestionsShouldReturnListOfQuestions() throws Exception {
-                when(qaService.getQuestionsAndAnswers()).thenReturn(List.of(mockQuestionAndAnswer));
+                when(qaService.getTriviaQuestions(1)).thenReturn(List.of(mockQuestionAndAnswer));
                 mockClient.perform(get("/questions"))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$[0].question").value("Kiwi?"))
-                                .andExpect(jsonPath("$[0].possible_answers", contains("Swagbaas", "dab")));
+                                .andExpect(jsonPath("$.results[0].question").value("Kiwi?"))
+                                .andExpect(jsonPath("$.results[0].possible_answers", contains("Swagbaas", "dab")));
         }
 
         @Test
         @DisplayName("Get /questions should return a 200 ok when there are no questions")
         void getQuestionsShouldHandleEmptyList() throws Exception {
-                when(qaService.getQuestionsAndAnswers()).thenReturn(List.of(mockQuestionAndAnswer));
-                when(qaService.getQuestionsAndAnswers()).thenReturn(new ArrayList<>());
+                when(qaService.getTriviaQuestions(1)).thenReturn(List.of(mockQuestionAndAnswer));
+                when(qaService.getTriviaQuestions(1)).thenReturn(new ArrayList<>());
                 mockClient.perform(get("/questions"))
                                 .andExpect(status().isOk());
         }
 
         @Test
-        @DisplayName("Get /question should return a single question and multiple answers")
-        void getQuestionShouldReturnOneQuestion() throws Exception {
-                when(qaService.getFirstQuestion()).thenReturn(mockQuestionAndAnswer);
-                mockClient.perform(get("/question"))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.question").value("Kiwi?"))
-                                .andExpect(jsonPath("$.possible_answers", contains("Swagbaas", "dab")));
-        }
-
-        @Test
-        @DisplayName("Post /checkAnswer should return true when the answer is correct")
-        void postCheckAnswerReturnsTrue() throws Exception {
-                AnswerResult answerResult = new AnswerResult(true, "Swagbaas");
-                when(qaService.evaluateAnswer("kiwi", "Swagbaas")).thenReturn(answerResult);
-
-                CheckAnswerRequestDTO requestDTO = new CheckAnswerRequestDTO("kiwi", "Swagbaas");
-
-                mockClient
-                                .perform(post("/checkanswer").contentType(APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(requestDTO)))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.isCorrect").value("true"))
-                                .andExpect(jsonPath("$.correctAnswer").value("Swagbaas"));
-        }
-
-        @Test
-        @DisplayName("Post /checkAnswer should return false when the answer is incorrect")
-        void postCheckAnswerReturnsFalse() throws Exception {
-                AnswerResult answerResult = new AnswerResult(false, "Swagbaas");
-                when(qaService.evaluateAnswer("kiwi", "dab")).thenReturn(answerResult);
-
-                CheckAnswerRequestDTO requestDTO = new CheckAnswerRequestDTO("kiwi", "dab");
-
-                mockClient
-                                .perform(post("/checkanswer").contentType(APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(requestDTO)))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.isCorrect").value("false"))
-                                .andExpect(jsonPath("$.correctAnswer").value("Swagbaas"));
-        }
-
-        @Test
         @DisplayName("Post /checkAnswers should handle answers for multiple questions")
         void postCheckAnswersHandlesMultiple() throws Exception {
-                AnswerResult answerResultCorrect = new AnswerResult(true, "Swagbaas");
-                AnswerResult answerResultIncorrect = new AnswerResult(false, "Swagbaas");
+                EvaluationResult answerResultCorrect = new EvaluationResult("kiwi", "Swagbaas", true);
+                EvaluationResult answerResultIncorrect = new EvaluationResult("kiwi", "Swagbaas", false);
                 when(qaService.evaluateAnswer("kiwi", "Swagbaas")).thenReturn(answerResultCorrect);
                 when(qaService.evaluateAnswer("kiwi 2", "dab")).thenReturn(answerResultIncorrect);
 
                 CheckAnswerRequestDTO firstAnswer = new CheckAnswerRequestDTO("kiwi", "Swagbaas");
                 CheckAnswerRequestDTO secondAnswer = new CheckAnswerRequestDTO("kiwi 2", "dab");
 
-                List<CheckAnswerRequestDTO> requestDTO = new ArrayList<>(List.of(firstAnswer, secondAnswer));
+                CheckAnswersRequestDTO requestDTO = new CheckAnswersRequestDTO(List.of(firstAnswer, secondAnswer));
 
                 mockClient
                                 .perform(post("/checkanswers").contentType(APPLICATION_JSON)
@@ -133,33 +92,17 @@ public class QaControllerTest {
         }
 
         @Test
-        @DisplayName("post /checkAnswer should handle when a question for which the answer is given does not exist")
-        void postCheckAnswerShouldHandleNonExistingQuestion() throws Exception {
-                when(qaService.evaluateAnswer("kiwi", "Swagbaas"))
-                                .thenThrow(new RuntimeException("Question not found."));
-
-                CheckAnswerRequestDTO requestDTO = new CheckAnswerRequestDTO("kiwi", "Swagbaas");
-
-                MvcResult response = mockClient
-                                .perform(post("/checkanswer").contentType(APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(requestDTO)))
-                                .andExpect(status().isUnprocessableContent())
-                                .andReturn();
-
-                assertThat(response.getResponse().getContentAsString()).contains("Question not found.");
-        }
-
-        @Test
         @DisplayName("post /checkAnswers should handle when a question for which the answer is given does not exist")
         void postCheckAnswersShouldHandleNonExistingQuestion() throws Exception {
                 when(qaService.evaluateAnswer("kiwi", "Swagbaas"))
-                                .thenThrow(new RuntimeException("Question not found."));
+                                .thenThrow(new QuestionNotFoundException("Question not found."));
 
-                CheckAnswerRequestDTO requestDTO = new CheckAnswerRequestDTO("kiwi", "Swagbaas");
+                CheckAnswerRequestDTO answerDTO = new CheckAnswerRequestDTO("kiwi", "Swagbaas");
+                CheckAnswersRequestDTO requestDTO = new CheckAnswersRequestDTO(List.of(answerDTO));
 
                 MvcResult response = mockClient
                                 .perform(post("/checkanswers").contentType(APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(List.of(requestDTO))))
+                                                .content(objectMapper.writeValueAsString(requestDTO)))
                                 .andExpect(status().isUnprocessableContent())
                                 .andReturn();
 
@@ -167,46 +110,45 @@ public class QaControllerTest {
         }
 
         @Test
-        @DisplayName("post /checkAnswer should return 400 when no Id provided")
-        void postCheckAnswerShouldThrowBadRequestWhenNoId() throws Exception {
-                CheckAnswerRequestDTO requestDTO = new CheckAnswerRequestDTO(null, "Swagbaas");
+        @DisplayName("post /checkAnswers should handle any exception")
+        void postCheckAnswersShouldHandleAnyException() throws Exception {
+                when(qaService.evaluateAnswer("kiwi", "Swagbaas"))
+                                .thenThrow(new RuntimeException("Error occured."));
 
-                mockClient
-                                .perform(post("/checkanswer").contentType(APPLICATION_JSON)
+                CheckAnswerRequestDTO answerDTO = new CheckAnswerRequestDTO("kiwi", "Swagbaas");
+                CheckAnswersRequestDTO requestDTO = new CheckAnswersRequestDTO(List.of(answerDTO));
+
+                MvcResult response = mockClient
+                                .perform(post("/checkanswers").contentType(APPLICATION_JSON)
                                                 .content(objectMapper.writeValueAsString(requestDTO)))
-                                .andExpect(status().isBadRequest());
-        }
+                                .andExpect(status().isInternalServerError())
+                                .andReturn();
 
-        @Test
-        @DisplayName("post /checkAnswer should return 400 when no answer provided")
-        void postCheckAnswerShouldThrowBadRequestWhenNoAnswer() throws Exception {
-                CheckAnswerRequestDTO requestDTO = new CheckAnswerRequestDTO("kiwi", null);
-
-                mockClient
-                                .perform(post("/checkanswer").contentType(APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(requestDTO)))
-                                .andExpect(status().isBadRequest());
+                assertThat(response.getResponse().getContentAsString())
+                                .contains("Something went wrong during evaluation of answer.");
         }
 
         @Test
         @DisplayName("post /checkAnswers should return 400 when no Id provided")
         void postCheckAnswersShouldThrowBadRequestWhenNoId() throws Exception {
-                CheckAnswerRequestDTO requestDTO = new CheckAnswerRequestDTO(null, "Swagbaas");
+                CheckAnswerRequestDTO answerDTO = new CheckAnswerRequestDTO(null, "Swagbaas");
+                CheckAnswersRequestDTO requestDTO = new CheckAnswersRequestDTO(List.of(answerDTO));
 
                 mockClient
                                 .perform(post("/checkanswers").contentType(APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(List.of(requestDTO))))
+                                                .content(objectMapper.writeValueAsString(requestDTO)))
                                 .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("post /checkAnswers should return 400 when no answer provided")
         void postCheckAnswersShouldThrowBadRequestWhenNoAnswer() throws Exception {
-                CheckAnswerRequestDTO requestDTO = new CheckAnswerRequestDTO("kiwi", null);
+                CheckAnswerRequestDTO answerDTO = new CheckAnswerRequestDTO("kiwi", null);
+                CheckAnswersRequestDTO requestDTO = new CheckAnswersRequestDTO(List.of(answerDTO));
 
                 mockClient
                                 .perform(post("/checkanswers").contentType(APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(List.of(requestDTO))))
+                                                .content(objectMapper.writeValueAsString(requestDTO)))
                                 .andExpect(status().isBadRequest());
         }
 

@@ -16,11 +16,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.example.trivia_backend.dtos.AnswerResult;
 import com.example.trivia_backend.dtos.TriviaAPIResponseDTO;
-import com.example.trivia_backend.dtos.TriviaAPIResponseDTO.TriviaQuestionDto;
+import com.example.trivia_backend.dtos.TriviaAPIResponseDTO.TriviaAPIQuestion;
 import com.example.trivia_backend.exceptions.QuestionNotFoundException;
-import com.example.trivia_backend.models.QuestionAndAnswer;
+import com.example.trivia_backend.records.EvaluationResult;
+import com.example.trivia_backend.records.TriviaQuestion;
 
 @ExtendWith(MockitoExtension.class)
 class QaServiceTests {
@@ -33,52 +33,31 @@ class QaServiceTests {
 
     @BeforeEach
     void beforeEach() {
-        service.clearQuestionAndAnswers();
-
-        TriviaQuestionDto triviaQuestionDtoOne = new TriviaQuestionDto("Kiwi? 1", "Swagbaas", List.of("dab"));
-        TriviaQuestionDto triviaQuestionDtoTwo = new TriviaQuestionDto("Kiwi? 2", "Swagbaas", List.of("dab"));
-        TriviaQuestionDto triviaQuestionDtoThree = new TriviaQuestionDto("Kiwi? 3", "Swagbaas", List.of("dab"));
-        TriviaQuestionDto triviaQuestionDtoFour = new TriviaQuestionDto("Kiwi? 4", "Swagbaas", List.of("dab"));
-        TriviaQuestionDto triviaQuestionDtoFive = new TriviaQuestionDto("Kiwi? 5", "Swagbaas", List.of("dab"));
-        TriviaQuestionDto triviaQuestionDtoSix = new TriviaQuestionDto("Kiwi? 6", "Swagbaas", List.of("dab"));
-        List<TriviaQuestionDto> triviaQuestionDtos = new ArrayList<>(List.of(triviaQuestionDtoOne, triviaQuestionDtoTwo,
+        TriviaAPIQuestion triviaQuestionDtoOne = new TriviaAPIQuestion("Kiwi? 1", "Swagbaas", List.of("dab"));
+        TriviaAPIQuestion triviaQuestionDtoTwo = new TriviaAPIQuestion("Kiwi? 2", "Swagbaas", List.of("dab"));
+        TriviaAPIQuestion triviaQuestionDtoThree = new TriviaAPIQuestion("Kiwi? 3", "Swagbaas", List.of("dab"));
+        TriviaAPIQuestion triviaQuestionDtoFour = new TriviaAPIQuestion("Kiwi? 4", "Swagbaas", List.of("dab"));
+        TriviaAPIQuestion triviaQuestionDtoFive = new TriviaAPIQuestion("Kiwi? 5", "Swagbaas", List.of("dab"));
+        TriviaAPIQuestion triviaQuestionDtoSix = new TriviaAPIQuestion("Kiwi? 6", "Swagbaas", List.of("dab"));
+        List<TriviaAPIQuestion> triviaQuestionDtos = new ArrayList<>(List.of(triviaQuestionDtoOne, triviaQuestionDtoTwo,
                 triviaQuestionDtoThree, triviaQuestionDtoFour, triviaQuestionDtoFive, triviaQuestionDtoSix));
         TriviaAPIResponseDTO triviaAPIResponseDTO = new TriviaAPIResponseDTO(triviaQuestionDtos);
         when(triviaAPIService.getQuestions()).thenReturn(triviaAPIResponseDTO);
-
-        service.fetchQuestions();
     }
 
     @Test
     @DisplayName("It should combine the correct and the incorrect answers in a possible answers list")
     void shouldCombineCorrectAndIncorrectAnswers() {
-        QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
+        TriviaQuestion qa = getFirstQuestion();
 
-        assertThat(questionAndAnswer.possibleAnswers()).contains("Swagbaas");
-        assertThat(questionAndAnswer.possibleAnswers()).contains("dab");
-    }
-
-    @Test
-    @DisplayName("When fetch questions is called it should add it to the current list of questions")
-    void fetchQuestionsContainsNewQuestion() {
-        assertThat(service.getFirstQuestion().question()).isEqualTo("Kiwi? 1");
-
-        TriviaQuestionDto triviaQuestionDto = new TriviaQuestionDto("Kiwi?", "Swagbaas", List.of("dab"));
-        List<TriviaQuestionDto> triviaQuestionDtos = new ArrayList<>(List.of(triviaQuestionDto));
-        TriviaAPIResponseDTO triviaAPIResponseDTO = new TriviaAPIResponseDTO(triviaQuestionDtos);
-        when(triviaAPIService.getQuestions()).thenReturn(triviaAPIResponseDTO);
-
-        service.clearQuestionAndAnswers();
-
-        service.fetchQuestions();
-
-        assertThat(service.getFirstQuestion().question()).isEqualTo("Kiwi?");
+        assertThat(qa.possibleAnswers()).contains("Swagbaas");
+        assertThat(qa.possibleAnswers()).contains("dab");
     }
 
     @Test
     @DisplayName("If an object with a specific question value exists it should not readd the question")
     void shouldNotAddDuplicateQuestions() {
-        assertThat(service.getQuestionsAndAnswers()).hasSize(6);
+        assertThat(service.getTriviaQuestions(50)).hasSize(6);
         String uuidString = UUID.randomUUID().toString();
         String question = "Kiwi? 1";
         String correctAnswer = "Yes";
@@ -86,8 +65,8 @@ class QaServiceTests {
         possibleAnswers.add("No");
         possibleAnswers.add(correctAnswer);
 
-        QuestionAndAnswer qa = new QuestionAndAnswer(uuidString, question, correctAnswer, possibleAnswers);
-        List<QuestionAndAnswer> result = service.addQuestion(qa);
+        TriviaQuestion qa = new TriviaQuestion(uuidString, question, correctAnswer, possibleAnswers);
+        List<TriviaQuestion> result = service.addTriviaQuestionToPool(qa);
 
         assertThat(result).hasSize(6);
     }
@@ -95,30 +74,31 @@ class QaServiceTests {
     @Test
     @DisplayName("The service should be able to evaluate answers")
     void shouldEvaluateAnswer() {
-        QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
+        TriviaQuestion qa = getFirstQuestion();
 
-        AnswerResult result = service.evaluateAnswer(questionAndAnswer.id(), "Swagbaas");
+        EvaluationResult result = service.evaluateAnswer(qa.id(), "Swagbaas");
 
         assertThat(result.isCorrect()).isTrue();
-        assertThat(result.correctAnswer()).isEqualTo(questionAndAnswer.correctAnswer());
+        assertThat(result.correctAnswer()).isEqualTo(qa.correctAnswer());
     }
 
     @Test
     @DisplayName("The service should delete the question from the list after the answer for that question is evaluated")
     void shouldDeleteQuestionAfterEvaluatingAnswer() {
-        QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
+        TriviaQuestion qa = getFirstQuestion();
 
-        service.evaluateAnswer(questionAndAnswer.id(), "Yes");
+        service.evaluateAnswer(qa.id(), "Yes");
 
-        assertThat(service.getQuestionsAndAnswers().size()).isEqualTo(5);
+        assertThat(service.getTriviaQuestions(50).size()).isEqualTo(5);
     }
 
     @Test
     @DisplayName("It should throw a RuntimeException if the question for which the answer is given does not exist")
     void shouldReturnRuntimeExceptionWhenEvaluatingAnswerOnNonExistingQuestion() {
-        QuestionAndAnswer qa = service.getFirstQuestion();
+        TriviaQuestion qa = getFirstQuestion();
 
-        service.clearQuestionAndAnswers();
+        service.evaluateAnswer(qa.id(), "dab");
+        // Should be deleted now
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             service.evaluateAnswer(qa.id(), "dab");
@@ -129,32 +109,37 @@ class QaServiceTests {
     }
 
     @Test
-    @DisplayName("Get first question should return null if no questions have been loaded")
-    void getFirstQuestionShouldReturnNullWhenListIsEmpty() {
-        when(triviaAPIService.getQuestions()).thenReturn(new TriviaAPIResponseDTO(List.of()));
-        service.clearQuestionAndAnswers();
+    @DisplayName("When pool has less than five trivia questions it should fetch a new batch of trivia api questions")
+    void getTriviaQuestionsFetchesNewBatchWhenBelowFive() {
+        assertThat(service.getTriviaQuestions(50)).hasSize(6);
 
-        QuestionAndAnswer qa = service.getFirstQuestion();
+        service.evaluateAnswer(getFirstQuestion().id(), "test");
 
-        assertThat(qa).isNull();
-    }
+        assertThat(service.getTriviaQuestions(50)).hasSize(5);
 
-    @Test
-    @DisplayName("When the list of questions has less than five questions it should fetch a new batch of questions")
-    void getQuestionAndAnswersFetchesNewBatchWhenBelowFive() {
-        assertThat(service.getQuestionsAndAnswers()).hasSize(6);
-
-        service.evaluateAnswer(service.getFirstQuestion().id(), "test");
-
-        assertThat(service.getQuestionsAndAnswers()).hasSize(5);
-
-        service.evaluateAnswer(service.getFirstQuestion().id(), "test");
+        service.evaluateAnswer(getFirstQuestion().id(), "test");
 
         // The Trivia API is mocked. The second time we add the same questions as the
         // first time.
         // Under the hood before adding it checks if the question is unique.
         // Since the 4 old questions still exist, this means it will add the two
         // answered questions.
-        assertThat(service.getQuestionsAndAnswers()).hasSize(6);
+        assertThat(service.getTriviaQuestions(50)).hasSize(6);
+    }
+
+    @Test
+    @DisplayName("Get trivia questions should return the request amount")
+    void getTriviaQuestionsShouldReturnRequestedAmount() {
+        assertThat(service.getTriviaQuestions(2)).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("Get trivia questions should return the max amount if requested amount is more than available in memory")
+    void getTriviaQuestionsShouldReturnAllAvailableInMemoryIfRequestedAmountIsMoreThanStored() {
+        assertThat(service.getTriviaQuestions(60)).hasSize(6);
+    }
+
+    private TriviaQuestion getFirstQuestion() {
+        return service.getTriviaQuestions(1).get(0);
     }
 }

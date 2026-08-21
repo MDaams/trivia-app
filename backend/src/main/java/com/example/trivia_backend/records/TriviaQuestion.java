@@ -1,8 +1,8 @@
-package com.example.trivia_backend.models;
+package com.example.trivia_backend.records;
 
 import java.util.List;
 
-public record QuestionAndAnswer(
+public record TriviaQuestion(
         String id,
         String question,
         String correctAnswer,
