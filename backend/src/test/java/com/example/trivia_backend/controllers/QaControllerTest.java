@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,7 +46,7 @@ public class QaControllerTest {
 
         @BeforeEach
         void beforeEach() {
-                mockQuestionAndAnswer = new TriviaQuestion("kiwi", "Kiwi?", "Swagbaas",
+                mockQuestionAndAnswer = new TriviaQuestion(UUID.randomUUID(), "Kiwi?", "Swagbaas", false,
                                 List.of("Swagbaas", "dab"));
         }
 
@@ -71,13 +72,17 @@ public class QaControllerTest {
         @Test
         @DisplayName("Post /checkAnswers should handle answers for multiple questions")
         void postCheckAnswersHandlesMultiple() throws Exception {
-                EvaluationResult answerResultCorrect = new EvaluationResult("kiwi", "Swagbaas", true);
-                EvaluationResult answerResultIncorrect = new EvaluationResult("kiwi", "Swagbaas", false);
-                when(qaService.evaluateAnswer("kiwi", "Swagbaas")).thenReturn(answerResultCorrect);
-                when(qaService.evaluateAnswer("kiwi 2", "dab")).thenReturn(answerResultIncorrect);
+                EvaluationResult answerResultCorrect = new EvaluationResult(UUID.randomUUID(), "Swagbaas", true);
+                EvaluationResult answerResultIncorrect = new EvaluationResult(UUID.randomUUID(), "Swagbaas", false);
+                when(qaService.evaluateAnswer(answerResultCorrect.id().toString(), "Swagbaas"))
+                                .thenReturn(answerResultCorrect);
+                when(qaService.evaluateAnswer(answerResultIncorrect.id().toString(), "dab"))
+                                .thenReturn(answerResultIncorrect);
 
-                CheckAnswerRequestDTO firstAnswer = new CheckAnswerRequestDTO("kiwi", "Swagbaas");
-                CheckAnswerRequestDTO secondAnswer = new CheckAnswerRequestDTO("kiwi 2", "dab");
+                CheckAnswerRequestDTO firstAnswer = new CheckAnswerRequestDTO(answerResultCorrect.id().toString(),
+                                "Swagbaas");
+                CheckAnswerRequestDTO secondAnswer = new CheckAnswerRequestDTO(answerResultIncorrect.id().toString(),
+                                "dab");
 
                 CheckAnswersRequestDTO requestDTO = new CheckAnswersRequestDTO(List.of(firstAnswer, secondAnswer));
 

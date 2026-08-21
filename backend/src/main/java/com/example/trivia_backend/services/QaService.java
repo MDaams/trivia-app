@@ -2,8 +2,9 @@ package com.example.trivia_backend.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,42 +24,31 @@ public class QaService {
 
     private final TriviaAPIService triviaAPIService;
 
-    private final AtomicReference<List<TriviaQuestion>> questionPool;
+    private final ConcurrentHashMap<UUID, TriviaQuestion> questionPoolMap;
 
     public QaService(TriviaAPIService triviaAPIService) {
-        questionPool = new AtomicReference<>(List.of());
+        questionPoolMap = new ConcurrentHashMap<>();
         this.triviaAPIService = triviaAPIService;
     }
 
     public List<TriviaQuestion> addTriviaQuestionToPool(TriviaQuestion qa) {
-        return this.questionPool.updateAndGet(currentList -> {
-            List<TriviaQuestion> updatedQuestionPool = new ArrayList<>(currentList);
+        questionPoolMap.putIfAbsent(qa.id(), qa);
 
-            if (findIndexByQuestion(qa.question(), updatedQuestionPool) > -1) {
-                return updatedQuestionPool;
-            }
-
-            updatedQuestionPool.add(qa);
-
-            return updatedQuestionPool;
-        });
+        return new ArrayList<>(questionPoolMap.values());
     }
 
     public EvaluationResult evaluateAnswer(String id, String givenAnswer) {
-        TriviaQuestion triviaQuestion = this.findById(id);
-
+        TriviaQuestion triviaQuestion = questionPoolMap.remove(UUID.fromString(id));
         if (triviaQuestion == null) {
             handleTriviaQuestionNotFound(id);
         }
-
-        removeFromPool(triviaQuestion);
 
         return new EvaluationResult(triviaQuestion.id(), triviaQuestion.correctAnswer(),
                 triviaQuestion.isCorrect(givenAnswer));
     }
 
     public List<TriviaQuestion> getTriviaQuestions(int amount) {
-        if (questionPool.get().size() < MIN_AMOUNT_TO_FETCH_THRESHOLD) {
+        if (questionPoolMap.size() < MIN_AMOUNT_TO_FETCH_THRESHOLD) {
             fetchTriviaAPIQuestions();
         }
 
@@ -79,32 +69,33 @@ public class QaService {
         List<TriviaQuestion> output = new ArrayList<>();
         int amountAdded = 0;
 
-        for (TriviaQuestion qa : this.questionPool.get()) {
-            if (amountAdded >= this.questionPool.get().size() || amountAdded >= amount) {
+        for (Map.Entry<UUID, TriviaQuestion> entry : questionPoolMap.entrySet()) {
+            TriviaQuestion triviaQuestion = entry.getValue();
+            if (amountAdded >= questionPoolMap.size() || amountAdded >= amount) {
                 break;
             }
-            output.add(qa);
-            amountAdded++;
-        }
 
+            if (triviaQuestion.isPresented()) {
+                continue;
+            }
+
+            if (setToPresented(triviaQuestion)) {
+                output.add(triviaQuestion);
+                amountAdded++;
+            }
+        }
         return output;
+    }
+
+    private boolean setToPresented(TriviaQuestion toUpdate) {
+        TriviaQuestion replacement = new TriviaQuestion(toUpdate.id(), toUpdate.question(),
+                toUpdate.correctAnswer(), true, toUpdate.possibleAnswers());
+        return questionPoolMap.replace(toUpdate.id(), toUpdate, replacement);
     }
 
     private void handleTriviaQuestionNotFound(String id) {
         log.error("Lookup for question failed. Requested ID: {}", id);
         throw new QuestionNotFoundException("Question not found.");
-    }
-
-    private List<TriviaQuestion> removeFromPool(TriviaQuestion qa) {
-        return this.questionPool.updateAndGet(currentList -> {
-            List<TriviaQuestion> updatedQuestionPool = new ArrayList<>(currentList);
-
-            int index = findIndexByQuestion(qa.question(), updatedQuestionPool);
-
-            updatedQuestionPool.remove(index);
-
-            return updatedQuestionPool;
-        });
     }
 
     private void fetchTriviaAPIQuestions() {
@@ -125,26 +116,9 @@ public class QaService {
     private TriviaQuestion parseDTOToTriviaQuestion(TriviaAPIQuestion triviaAPIQuestion) {
         List<String> possibleAnswers = new ArrayList<>(triviaAPIQuestion.incorrectAnswers());
         possibleAnswers.add(triviaAPIQuestion.correctAnswer());
-        return new TriviaQuestion(UUID.randomUUID().toString(),
+        return new TriviaQuestion(UUID.randomUUID(),
                 triviaAPIQuestion.question(),
-                triviaAPIQuestion.correctAnswer(), possibleAnswers);
+                triviaAPIQuestion.correctAnswer(), false, possibleAnswers);
     }
 
-    private TriviaQuestion findById(String id) {
-        for (TriviaQuestion triviaQuestion : this.questionPool.get()) {
-            if (triviaQuestion.id().equals(id)) {
-                return triviaQuestion;
-            }
-        }
-        return null;
-    }
-
-    private int findIndexByQuestion(String question, List<TriviaQuestion> triviaQuestions) {
-        for (int i = 0; i < triviaQuestions.size(); i++) {
-            if (triviaQuestions.get(i).question().equals(question)) {
-                return i;
-            }
-        }
-        return -1;
-    }
 }

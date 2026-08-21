@@ -58,14 +58,14 @@ class QaServiceTests {
     @DisplayName("If an object with a specific question value exists it should not readd the question")
     void shouldNotAddDuplicateQuestions() {
         assertThat(service.getTriviaQuestions(50)).hasSize(6);
-        String uuidString = UUID.randomUUID().toString();
+        UUID id = UUID.randomUUID();
         String question = "Kiwi? 1";
         String correctAnswer = "Yes";
         List<String> possibleAnswers = new ArrayList<String>();
         possibleAnswers.add("No");
         possibleAnswers.add(correctAnswer);
 
-        TriviaQuestion qa = new TriviaQuestion(uuidString, question, correctAnswer, possibleAnswers);
+        TriviaQuestion qa = new TriviaQuestion(id, question, correctAnswer, false, possibleAnswers);
         List<TriviaQuestion> result = service.addTriviaQuestionToPool(qa);
 
         assertThat(result).hasSize(6);
@@ -76,7 +76,7 @@ class QaServiceTests {
     void shouldEvaluateAnswer() {
         TriviaQuestion qa = getFirstQuestion();
 
-        EvaluationResult result = service.evaluateAnswer(qa.id(), "Swagbaas");
+        EvaluationResult result = service.evaluateAnswer(qa.id().toString(), "Swagbaas");
 
         assertThat(result.isCorrect()).isTrue();
         assertThat(result.correctAnswer()).isEqualTo(qa.correctAnswer());
@@ -87,7 +87,7 @@ class QaServiceTests {
     void shouldDeleteQuestionAfterEvaluatingAnswer() {
         TriviaQuestion qa = getFirstQuestion();
 
-        service.evaluateAnswer(qa.id(), "Yes");
+        service.evaluateAnswer(qa.id().toString(), "Yes");
 
         assertThat(service.getTriviaQuestions(50).size()).isEqualTo(5);
     }
@@ -97,11 +97,11 @@ class QaServiceTests {
     void shouldReturnRuntimeExceptionWhenEvaluatingAnswerOnNonExistingQuestion() {
         TriviaQuestion qa = getFirstQuestion();
 
-        service.evaluateAnswer(qa.id(), "dab");
+        service.evaluateAnswer(qa.id().toString(), "dab");
         // Should be deleted now
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            service.evaluateAnswer(qa.id(), "dab");
+            service.evaluateAnswer(qa.id().toString(), "dab");
         });
 
         assertThat(exception).isInstanceOf(QuestionNotFoundException.class);
@@ -113,11 +113,11 @@ class QaServiceTests {
     void getTriviaQuestionsFetchesNewBatchWhenBelowFive() {
         assertThat(service.getTriviaQuestions(50)).hasSize(6);
 
-        service.evaluateAnswer(getFirstQuestion().id(), "test");
+        service.evaluateAnswer(getFirstQuestion().id().toString(), "test");
 
         assertThat(service.getTriviaQuestions(50)).hasSize(5);
 
-        service.evaluateAnswer(getFirstQuestion().id(), "test");
+        service.evaluateAnswer(getFirstQuestion().id().toString(), "test");
 
         // The Trivia API is mocked. The second time we add the same questions as the
         // first time.

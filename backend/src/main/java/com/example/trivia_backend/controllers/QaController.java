@@ -45,32 +45,27 @@ public class QaController {
     @PostMapping("/checkanswers")
     public ResponseEntity<ApiResponse> postCheckAnswers(
             @RequestBody CheckAnswersRequestDTO request) {
-        if (!isValidCheckAnswersRequest(request)) {
+        if (!requestIsValid(request)) {
             return ResponseEntity.badRequest().build();
         }
 
-        return evaluateAnswer(request.answers());
+        return gradeAnswers(request.answers());
     }
 
     private TriviaQuestionResponseDTO parseQuestionToDto(TriviaQuestion qa) {
-        return new TriviaQuestionResponseDTO(qa.id(), qa.question(), qa.possibleAnswers());
+        return new TriviaQuestionResponseDTO(qa.id().toString(), qa.question(), qa.possibleAnswers());
     }
 
     private CheckAnswerResponseDTO parseAnswerToDTO(EvaluationResult answerResult) {
-        return new CheckAnswerResponseDTO(answerResult.id(), answerResult.correctAnswer(), answerResult.isCorrect());
+        return new CheckAnswerResponseDTO(answerResult.id().toString(), answerResult.correctAnswer(),
+                answerResult.isCorrect());
     }
 
-    private boolean isValidCheckAnswersRequest(CheckAnswersRequestDTO request) {
-        for (int i = 0; i < request.answers().size(); i++) {
-            CheckAnswerRequestDTO req = request.answers().get(i);
-            if (req.id() == null || req.answer() == null) {
-                return false;
-            }
-        }
-        return true;
+    private boolean requestIsValid(CheckAnswersRequestDTO request) {
+        return request.answers().stream().allMatch(req -> req.id() != null && req.answer() != null);
     }
 
-    private ResponseEntity<ApiResponse> evaluateAnswer(List<CheckAnswerRequestDTO> answers) {
+    private ResponseEntity<ApiResponse> gradeAnswers(List<CheckAnswerRequestDTO> answers) {
         List<CheckAnswerResponseDTO> results = new ArrayList<>();
 
         for (CheckAnswerRequestDTO answer : answers) {
