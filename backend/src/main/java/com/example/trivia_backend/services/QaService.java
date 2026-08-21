@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.stereotype.Service;
 
+import com.example.trivia_backend.dtos.AnswerResult;
 import com.example.trivia_backend.dtos.TriviaAPIResponseDTO;
 import com.example.trivia_backend.dtos.TriviaAPIResponseDTO.TriviaQuestionDto;
 import com.example.trivia_backend.exceptions.QuestionNotFoundException;
@@ -21,6 +22,7 @@ public class QaService {
     public QaService(TriviaAPIService triviaAPIService) {
         questionsAndAnswers = new AtomicReference<>(List.of());
         this.triviaAPIService = triviaAPIService;
+        this.fetchQuestions();
     }
 
     private void setQuestionAndAnswers(List<QuestionAndAnswer> updatedQuestionAndAnswers) {
@@ -75,7 +77,7 @@ public class QaService {
         return questionAndAnswers.get(0);
     }
 
-    public boolean evaluateAnswer(String id, String givenAnswer) {
+    public AnswerResult evaluateAnswer(String id, String givenAnswer) {
         QuestionAndAnswer questionAndAnswer = this.findById(id);
 
         if (questionAndAnswer == null) {
@@ -84,7 +86,7 @@ public class QaService {
 
         deleteQuestionAndAnswers(questionAndAnswer);
 
-        return questionAndAnswer.isCorrect(givenAnswer);
+        return new AnswerResult(questionAndAnswer.isCorrect(givenAnswer), questionAndAnswer.correctAnswer());
     }
 
     public List<QuestionAndAnswer> addQuestion(QuestionAndAnswer qa) {

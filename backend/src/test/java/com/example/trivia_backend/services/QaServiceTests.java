@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.example.trivia_backend.dtos.AnswerResult;
 import com.example.trivia_backend.dtos.TriviaAPIResponseDTO;
 import com.example.trivia_backend.dtos.TriviaAPIResponseDTO.TriviaQuestionDto;
 import com.example.trivia_backend.exceptions.QuestionNotFoundException;
@@ -91,9 +92,10 @@ class QaServiceTests {
     void shouldEvaluateAnswer() {
         QuestionAndAnswer questionAndAnswer = service.getFirstQuestion();
 
-        boolean result = service.evaluateAnswer(questionAndAnswer.id(), "Swagbaas");
+        AnswerResult result = service.evaluateAnswer(questionAndAnswer.id(), "Swagbaas");
 
-        assertThat(result).isTrue();
+        assertThat(result.isCorrect()).isTrue();
+        assertThat(result.correctAnswer()).isEqualTo(questionAndAnswer.correctAnswer());
     }
 
     @Test
