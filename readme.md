@@ -15,3 +15,8 @@ For a single player game this would be enough. For a multiplayer game, unfortuna
 To keep the list from growing infinitely, when a question is answered it is deleted. When the list is empty, a new bulk fetch is done to the TriviaAPI. This means when two users receive the same question and Henk evaluates his answer before Anna. Anna's will evaluate on a non-existing question. I added a `RuntimeException` so this is handled gracefully. 
 
 To make multiplayer robust, sessions should be implemented and each user should get their own list of questions in memory. 
+
+
+# Future Considerations
+
+The external trivia API can return 429 too many requests. This wont happen if only a single user uses this API. It would be good to add a retry mechanism in the future when this code is returned from the external API.
