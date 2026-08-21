@@ -3,6 +3,7 @@ package com.example.trivia_backend.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.restclient.test.autoconfigure.RestClientTest;
@@ -28,6 +29,7 @@ public class TriviaAPIServiceTest {
     private MockRestServiceServer server;
 
     @Test
+    @DisplayName("It should parse the questions received from the external API")
     void getQuestionsParsesQuestions() {
         String mockResponse = """
                 {
@@ -49,6 +51,7 @@ public class TriviaAPIServiceTest {
     }
 
     @Test
+    @DisplayName("It should throw an exception when the endpoint could not be found")
     void getQuestionsShouldHandleNotFound() {
         server.expect(requestTo("https://opentdb.com/api.php?amount=50"))
                 .andRespond(withResourceNotFound());
@@ -61,6 +64,7 @@ public class TriviaAPIServiceTest {
     }
 
     @Test
+    @DisplayName("It should throw an exception when the endpoint returns 429: Too many requests")
     void getQuestionsShouldHandleTooManyRequests() {
         server.expect(requestTo("https://opentdb.com/api.php?amount=50"))
                 .andRespond(withTooManyRequests());
@@ -73,6 +77,7 @@ public class TriviaAPIServiceTest {
     }
 
     @Test
+    @DisplayName("It should throw an exception on any status code that is not 200")
     void getQuestionsShouldHandleAnyNonOk() {
         server.expect(requestTo("https://opentdb.com/api.php?amount=50"))
                 .andRespond(withServiceUnavailable());

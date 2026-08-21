@@ -22,7 +22,6 @@ public class QaService {
     public QaService(TriviaAPIService triviaAPIService) {
         questionsAndAnswers = new AtomicReference<>(List.of());
         this.triviaAPIService = triviaAPIService;
-        this.fetchQuestions();
     }
 
     private void setQuestionAndAnswers(List<QuestionAndAnswer> updatedQuestionAndAnswers) {
@@ -30,6 +29,9 @@ public class QaService {
     }
 
     public List<QuestionAndAnswer> getQuestionsAndAnswers() {
+        if (questionsAndAnswers.get().size() < 5) {
+            fetchQuestions();
+        }
         return questionsAndAnswers.get();
     }
 

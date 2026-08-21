@@ -3,9 +3,12 @@ package com.example.trivia_backend.controllers;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.trivia_backend.dtos.AnswerResult;
+import com.example.trivia_backend.dtos.ApiResponse;
 import com.example.trivia_backend.dtos.CheckAnswerRequestDTO;
 import com.example.trivia_backend.dtos.CheckAnswerResponseDTO;
-import com.example.trivia_backend.dtos.QuestionAndAnswerDTO;
+import com.example.trivia_backend.dtos.CheckAnswersResponseDTO;
+import com.example.trivia_backend.dtos.ErrorResponseDTO;
+import com.example.trivia_backend.dtos.QuestionAndAnswerResponseDTO;
 import com.example.trivia_backend.models.QuestionAndAnswer;
 import com.example.trivia_backend.services.QaService;
 
@@ -27,28 +30,29 @@ public class QaController {
     }
 
     @GetMapping("/questions")
-    public List<QuestionAndAnswerDTO> getQuestions() {
-        List<QuestionAndAnswerDTO> output = new ArrayList<>();
+    public List<QuestionAndAnswerResponseDTO> getQuestions() {
+        List<QuestionAndAnswerResponseDTO> output = new ArrayList<>();
         List<QuestionAndAnswer> questions = qaService.getQuestionsAndAnswers();
 
         for (int i = 0; i < questions.size(); i++) {
             QuestionAndAnswer qa = questions.get(i);
-            QuestionAndAnswerDTO qaDTO = new QuestionAndAnswerDTO(qa.id(), qa.question(), qa.possibleAnswers());
+            QuestionAndAnswerResponseDTO qaDTO = new QuestionAndAnswerResponseDTO(qa.id(), qa.question(),
+                    qa.possibleAnswers());
             output.add(qaDTO);
         }
         return output;
     }
 
     @GetMapping("/question")
-    public QuestionAndAnswerDTO getQuestion() {
+    public QuestionAndAnswerResponseDTO getQuestion() {
         QuestionAndAnswer qa = qaService.getFirstQuestion();
-        return new QuestionAndAnswerDTO(qa.id(), qa.question(), qa.possibleAnswers());
+        return new QuestionAndAnswerResponseDTO(qa.id(), qa.question(), qa.possibleAnswers());
     }
 
     @PostMapping("/checkanswers")
-    public ResponseEntity<List<CheckAnswerResponseDTO>> postCheckAnswers(
+    public ResponseEntity<ApiResponse> postCheckAnswers(
             @RequestBody List<CheckAnswerRequestDTO> requests) {
-        List<CheckAnswerResponseDTO> response = new ArrayList<>();
+        List<CheckAnswerResponseDTO> results = new ArrayList<>();
         for (int i = 0; i < requests.size(); i++) {
             CheckAnswerRequestDTO request = requests.get(i);
 
@@ -56,26 +60,35 @@ public class QaController {
                 return ResponseEntity.badRequest().build();
             }
 
-            AnswerResult result = qaService.evaluateAnswer(request.id(), request.answer());
+            AnswerResult result = null;
+            try {
+                result = qaService.evaluateAnswer(request.id(), request.answer());
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+                return ResponseEntity.unprocessableContent().body(new ErrorResponseDTO(e.getMessage()));
 
-            CheckAnswerResponseDTO responseDto = new CheckAnswerResponseDTO(result.isCorrect(), result.correctAnswer());
+            }
 
-            response.add(responseDto);
+            results.add(new CheckAnswerResponseDTO(result.isCorrect(),
+                    result.correctAnswer()));
         }
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new CheckAnswersResponseDTO(results));
     }
 
     @PostMapping("/checkanswer")
-    public ResponseEntity<CheckAnswerResponseDTO> postCheckAnswer(@RequestBody CheckAnswerRequestDTO request) {
+    public ResponseEntity<ApiResponse> postCheckAnswer(@RequestBody CheckAnswerRequestDTO request) {
         if (request.id() == null || request.answer() == null) {
             return ResponseEntity.badRequest().build();
         }
 
-        AnswerResult result = qaService.evaluateAnswer(request.id(), request.answer());
-
-        CheckAnswerResponseDTO response = new CheckAnswerResponseDTO(result.isCorrect(), result.correctAnswer());
-
-        return ResponseEntity.ok(response);
+        try {
+            AnswerResult result = qaService.evaluateAnswer(request.id(), request.answer());
+            new CheckAnswerResponseDTO(result.isCorrect(), result.correctAnswer());
+            return ResponseEntity.ok(new CheckAnswerResponseDTO(result.isCorrect(), result.correctAnswer()));
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.unprocessableContent().body(new ErrorResponseDTO(e.getMessage()));
+        }
     }
 }
