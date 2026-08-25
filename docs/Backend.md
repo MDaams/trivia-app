@@ -1,5 +1,7 @@
 # Assumptions
 * Since the application is for a Demo, it is acceptable to make it work properly for a single user, thus no sessions or personalized questions lists.
+* Murphies law has a 100% bonus chance of making a surprise appearance during a Demo.
+* The more I know, the more I understand how little I know.
 
 # The creation
 The idea I had was simple load questions in batch, to dodge the TooManyRequests exceptions I ran into while creating the frontend PoC, store them and expose them while stripping the correct answer value using a DTO.
@@ -18,7 +20,9 @@ In hindsight a database was probably the quicker solution. It would have handled
 
 I chose to store the questions in memory because a database for a demo felt overkill. I opted to make the service functions easy to change by using a central ```ConcurrentHashMap``` that could be easily replaced with a repository that does CRUD operations on a database.
 
-Secondly if I want to host this in the cloud, as I intended, I dont want to spend time setting up a (free) database and forget about it after the demo, thus wasting server resources (even though I assume they optimize this, right?).
+Secondly if I want to host this in the cloud, as I intended, I dont want to spend time setting up a (free) database and forget about it after the demo, thus wasting server resources (even though I assume they optimize this, [right?](https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2Frcdal3nps8p91.jpg).
+
+
 
 If I had to pick a database for this demo, I would have used SQLite. Since it is an in-memory representation of the solution I picked now. And it would be easy to host with the backend.
 
@@ -84,3 +88,10 @@ The external trivia API can return 429 too many requests. This wont happen if on
 Because one instance hold its own list scaling vertically would be a challenge. Especially with a round-robin. This would require a single source of truth for all tenants like a database or a cache like redis.
 
 If we go back to Henk and Anna. When Henk gets a question from instance A and then checks his answer with instance B the question with its unique UUID would not be present on instance B, thus this will result in a ```QuestionNotFoundException```. SQLite would not cut it. For now I will keep this box closed.
+
+## Race condition on fetch
+There is still a race condition possible during the getting of questions, during this the service checks if the question pool is almost empty (size < 5) if Henk and Anna fetch at the same time they could trigger two fetches at the same time. This could be solved with an ```AtomicBoolean``` that is set to True during before starting a fetch and set to False after. Letting Anna wait while Henk is fetching questions. 
+
+This chance however, is quite small and the network-latency with two users make this chance even slimmer. The effect might be that the external API returns a 429, yet this is already handled. If both request go through the result would be that instead of 50, 100 questions get added. This has no impact on the user experience (since both would be waiting even with a boolean that triggers a while or sleep).
+
+Since it would add complexity that does not add much value, I pass for now.

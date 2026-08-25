@@ -1,7 +1,5 @@
-export interface QuestionAndAnswer {
-  id: number;
-  answers: string[];
-  correctAnswer: string;
+export interface TriviaQuestion {
+  id: string;
+  possibleAnswers: string[];
   question: string;
-  isAnswered: boolean;
 }

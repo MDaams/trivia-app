@@ -44,6 +44,9 @@ public class QaControllerTest {
 
         private TriviaQuestion mockQuestionAndAnswer;
 
+        private final String checksAnswersEndpoint = "/checkAnswers";
+        private final String getQuestionsEndpoint = "/questions";
+
         @BeforeEach
         void beforeEach() {
                 mockQuestionAndAnswer = new TriviaQuestion(UUID.randomUUID(), "Kiwi?", "Swagbaas", false,
@@ -54,7 +57,7 @@ public class QaControllerTest {
         @DisplayName("Get /questions should return a list filled with questions and answers")
         void getQuestionsShouldReturnListOfQuestions() throws Exception {
                 when(qaService.getTriviaQuestions(1)).thenReturn(List.of(mockQuestionAndAnswer));
-                mockClient.perform(get("/questions"))
+                mockClient.perform(get(getQuestionsEndpoint))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.results[0].question").value("Kiwi?"))
                                 .andExpect(jsonPath("$.results[0].possible_answers", contains("Swagbaas", "dab")));
@@ -65,7 +68,7 @@ public class QaControllerTest {
         void getQuestionsShouldHandleEmptyList() throws Exception {
                 when(qaService.getTriviaQuestions(1)).thenReturn(List.of(mockQuestionAndAnswer));
                 when(qaService.getTriviaQuestions(1)).thenReturn(new ArrayList<>());
-                mockClient.perform(get("/questions"))
+                mockClient.perform(get(getQuestionsEndpoint))
                                 .andExpect(status().isOk());
         }
 
@@ -87,7 +90,7 @@ public class QaControllerTest {
                 CheckAnswersRequestDTO requestDTO = new CheckAnswersRequestDTO(List.of(firstAnswer, secondAnswer));
 
                 mockClient
-                                .perform(post("/checkanswers").contentType(APPLICATION_JSON)
+                                .perform(post(checksAnswersEndpoint).contentType(APPLICATION_JSON)
                                                 .content(objectMapper.writeValueAsString(requestDTO)))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.results[0].isCorrect").value("true"))
@@ -106,7 +109,7 @@ public class QaControllerTest {
                 CheckAnswersRequestDTO requestDTO = new CheckAnswersRequestDTO(List.of(answerDTO));
 
                 MvcResult response = mockClient
-                                .perform(post("/checkanswers").contentType(APPLICATION_JSON)
+                                .perform(post(checksAnswersEndpoint).contentType(APPLICATION_JSON)
                                                 .content(objectMapper.writeValueAsString(requestDTO)))
                                 .andExpect(status().isUnprocessableContent())
                                 .andReturn();
@@ -124,7 +127,7 @@ public class QaControllerTest {
                 CheckAnswersRequestDTO requestDTO = new CheckAnswersRequestDTO(List.of(answerDTO));
 
                 MvcResult response = mockClient
-                                .perform(post("/checkanswers").contentType(APPLICATION_JSON)
+                                .perform(post(checksAnswersEndpoint).contentType(APPLICATION_JSON)
                                                 .content(objectMapper.writeValueAsString(requestDTO)))
                                 .andExpect(status().isInternalServerError())
                                 .andReturn();
@@ -140,7 +143,7 @@ public class QaControllerTest {
                 CheckAnswersRequestDTO requestDTO = new CheckAnswersRequestDTO(List.of(answerDTO));
 
                 mockClient
-                                .perform(post("/checkanswers").contentType(APPLICATION_JSON)
+                                .perform(post(checksAnswersEndpoint).contentType(APPLICATION_JSON)
                                                 .content(objectMapper.writeValueAsString(requestDTO)))
                                 .andExpect(status().isBadRequest());
         }
@@ -152,7 +155,7 @@ public class QaControllerTest {
                 CheckAnswersRequestDTO requestDTO = new CheckAnswersRequestDTO(List.of(answerDTO));
 
                 mockClient
-                                .perform(post("/checkanswers").contentType(APPLICATION_JSON)
+                                .perform(post(checksAnswersEndpoint).contentType(APPLICATION_JSON)
                                                 .content(objectMapper.writeValueAsString(requestDTO)))
                                 .andExpect(status().isBadRequest());
         }
