@@ -1,7 +1,15 @@
-export interface QuestionAndAnswer {
-  id: number;
-  answers: string[];
-  correctAnswer: string;
+export interface TriviaQuestion {
+  id: string;
+  possibleAnswers: string[];
   question: string;
-  isAnswered: boolean;
+}
+
+export interface TriviaQuestionDTO {
+  id: string;
+  possible_answers: string[];
+  question: string;
+}
+
+export interface TriviaQuestionResponseDTO {
+  results: TriviaQuestionDTO[];
 }
