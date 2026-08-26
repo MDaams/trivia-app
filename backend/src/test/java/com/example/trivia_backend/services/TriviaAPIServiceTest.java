@@ -27,6 +27,8 @@ public class TriviaAPIServiceTest {
     @Autowired
     private MockRestServiceServer server;
 
+    private final String ENDPOINT = "https://opentdb.com/api.php?amount=50&encode=base64";
+
     @Test
     @DisplayName("It should parse the questions received from the external API")
     void getQuestionsParsesQuestions() {
@@ -43,7 +45,7 @@ public class TriviaAPIServiceTest {
                 }
                 """;
 
-        server.expect(requestTo("https://opentdb.com/api.php?amount=50"))
+        server.expect(requestTo(ENDPOINT))
                 .andRespond(withSuccess(mockResponse, MediaType.APPLICATION_JSON));
         TriviaAPIResponseDTO triviaAPIResponseDTO = service.getQuestions();
         assertThat(triviaAPIResponseDTO.results().get(0).question()).isEqualTo("Kiwi?");
@@ -52,7 +54,7 @@ public class TriviaAPIServiceTest {
     @Test
     @DisplayName("It should throw an exception when the endpoint could not be found")
     void getQuestionsShouldHandleNotFound() {
-        server.expect(requestTo("https://opentdb.com/api.php?amount=50"))
+        server.expect(requestTo(ENDPOINT))
                 .andRespond(withResourceNotFound());
 
         Exception exception = assertThrows(Exception.class, () -> {
@@ -65,7 +67,7 @@ public class TriviaAPIServiceTest {
     @Test
     @DisplayName("It should throw an exception when the endpoint returns 429: Too many requests")
     void getQuestionsShouldHandleTooManyRequests() {
-        server.expect(requestTo("https://opentdb.com/api.php?amount=50"))
+        server.expect(requestTo(ENDPOINT))
                 .andRespond(withTooManyRequests());
 
         Exception exception = assertThrows(RateLimitExceededException.class, () -> {
@@ -78,7 +80,7 @@ public class TriviaAPIServiceTest {
     @Test
     @DisplayName("It should throw an exception on any status code that is not 200")
     void getQuestionsShouldHandleAnyNonOk() {
-        server.expect(requestTo("https://opentdb.com/api.php?amount=50"))
+        server.expect(requestTo(ENDPOINT))
                 .andRespond(withServiceUnavailable());
 
         Exception exception = assertThrows(Exception.class, () -> {

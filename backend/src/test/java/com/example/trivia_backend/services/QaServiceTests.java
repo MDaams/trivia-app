@@ -7,7 +7,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,14 +37,27 @@ class QaServiceTests {
     @Mock
     private TriviaAPIService triviaAPIService;
 
+    private String toBase64(String plainText) {
+        if (plainText == null)
+            return null;
+        return Base64.getEncoder().encodeToString(plainText.getBytes(StandardCharsets.UTF_8));
+    }
+
     @BeforeEach
     void beforeEach() {
-        TriviaAPIQuestion triviaQuestionOne = new TriviaAPIQuestion("Kiwi? 1", "Swagbaas", List.of("dab"));
-        TriviaAPIQuestion triviaQuestionTwo = new TriviaAPIQuestion("Kiwi? 2", "Swagbaas", List.of("dab"));
-        TriviaAPIQuestion triviaQuestionThree = new TriviaAPIQuestion("Kiwi? 3", "Swagbaas", List.of("dab"));
-        TriviaAPIQuestion triviaQuestionFour = new TriviaAPIQuestion("Kiwi? 4", "Swagbaas", List.of("dab"));
-        TriviaAPIQuestion triviaQuestionFive = new TriviaAPIQuestion("Kiwi? 5", "Swagbaas", List.of("dab"));
-        TriviaAPIQuestion triviaQuestionSix = new TriviaAPIQuestion("Kiwi? 6", "Swagbaas", List.of("dab"));
+        TriviaAPIQuestion triviaQuestionOne = new TriviaAPIQuestion(toBase64("Kiwi? 1"), toBase64("Swagbaas"),
+                List.of(toBase64("dab")));
+        TriviaAPIQuestion triviaQuestionTwo = new TriviaAPIQuestion(toBase64("Kiwi? 2"), toBase64("Swagbaas"),
+                List.of(toBase64("dab")));
+        TriviaAPIQuestion triviaQuestionThree = new TriviaAPIQuestion(toBase64("Kiwi? 3"), toBase64("Swagbaas"),
+                List.of(toBase64("dab")));
+        TriviaAPIQuestion triviaQuestionFour = new TriviaAPIQuestion(toBase64("Kiwi? 4"), toBase64("Swagbaas"),
+                List.of(toBase64("dab")));
+        TriviaAPIQuestion triviaQuestionFive = new TriviaAPIQuestion(toBase64("Kiwi? 5"), toBase64("Swagbaas"),
+                List.of(toBase64("dab")));
+        TriviaAPIQuestion triviaQuestionSix = new TriviaAPIQuestion(toBase64("Kiwi? 6"), toBase64("Swagbaas"),
+                List.of(toBase64("dab")));
+
         List<TriviaAPIQuestion> triviaQuestions = new ArrayList<>(List.of(triviaQuestionOne, triviaQuestionTwo,
                 triviaQuestionThree, triviaQuestionFour, triviaQuestionFive, triviaQuestionSix));
         TriviaAPIResponseDTO triviaAPIResponseDTO = new TriviaAPIResponseDTO(triviaQuestions);
@@ -176,9 +191,9 @@ class QaServiceTests {
     @DisplayName("It should parse boolean strings true and false to human readable Yes and No")
     void shouldParseBooleanValuesToHumanReadable() {
         TriviaAPIQuestion mockQuestion = new TriviaAPIQuestion(
-                "kiwi?",
-                "true",
-                List.of("false"));
+                toBase64("kiwi?"),
+                toBase64("true"),
+                List.of(toBase64("false")));
         TriviaAPIResponseDTO booleanResponse = new TriviaAPIResponseDTO(List.of(mockQuestion));
 
         service.clearQuestions();

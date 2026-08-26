@@ -1,21 +1,19 @@
-import type { TriviaQuestion } from "./types";
+import type {
+  TriviaQuestion,
+  TriviaQuestionDTO,
+  TriviaQuestionResponseDTO,
+} from "./types";
 
 const BASE_URL = "http://localhost:8080/";
 
-const decodeHtml = (html: string) => {
-  const txt = document.createElement("textarea");
-  txt.innerHTML = html;
-  return txt.value;
-};
-
-const parseToQuestionAndAnswers = (data: any): TriviaQuestion => {
+const parseToQuestionAndAnswers = (data: TriviaQuestionDTO): TriviaQuestion => {
   const item = data;
 
   const possibleAnswers: string[] = item.possible_answers;
 
   return {
     id: item.id,
-    question: decodeHtml(item.question),
+    question: item.question,
     possibleAnswers: possibleAnswers.map((a) => {
       return a;
     }),
@@ -23,9 +21,9 @@ const parseToQuestionAndAnswers = (data: any): TriviaQuestion => {
 };
 
 export const fetchQuestion = async (): Promise<TriviaQuestion | undefined> => {
-  const endpoint = "questions";
+  const endpoint = "questions?amount=1";
   const response = await fetch(BASE_URL + endpoint);
-  const data = await response.json();
+  const data: TriviaQuestionResponseDTO = await response.json();
 
   if (response.status !== 200 || !data || data.results.length == 0) {
     return undefined;

@@ -13,6 +13,7 @@ public class TriviaAPIService {
     private final String AMOUNT = "50";
     private final String BASE_URL = "https://opentdb.com";
     private final String ENDPOINT = "/api.php?amount=" + AMOUNT;
+    private final String ENCODING = "&encode=base64";
 
     private final RestClient restClient;
 
@@ -23,7 +24,7 @@ public class TriviaAPIService {
     public TriviaAPIResponseDTO getQuestions() {
         var requestSpecification = restClient.get();
 
-        var responseSpecification = requestSpecification.uri(ENDPOINT).retrieve()
+        var responseSpecification = requestSpecification.uri(ENDPOINT+ENCODING).retrieve()
                 .onStatus(status -> status.value() == 429, (request, response) -> {
                     handleTooManyRequestResponse();
                 })
