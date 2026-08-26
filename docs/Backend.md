@@ -1,6 +1,6 @@
 # Assumptions
 * Since the application is for a Demo, it is acceptable to make it work properly for a single user, thus no sessions or personalized questions lists.
-* Murphies law has a 100% bonus chance of making a surprise appearance during a Demo.
+* Murphy's law has a 100% bonus chance of making a surprise appearance during a Demo.
 * The more I know, the more I understand how little I know.
 
 # The creation
@@ -11,6 +11,13 @@ I chose TDD so I would always be confident to change the implementation which he
 I prefered using for-loops over streams since for loops are more efficient. I only used streams when a stream would improve readability.
 
 I logged exceptions and warnings only if it is worth alerting, since logging everything can become a money sink over time.
+
+
+# Other choices
+* Use records over classes since the data should be immutable, no complex business logic required except the stripping of the correct answer before exposing the data.
+* Called OpenDB with base64 encoding, so I dont get weird html characters and can parse it before storing the data.
+* Fetched highest amount during OpenDB loading so the load on OpenDB is minimal.
+* Chose in memory storing over using a database as it is more lightweight and data persistence is not required.
 
 ## The Trivia storage (sounds simple right)
 Instead of a database I used an in-memory list. This saves spinning up a database but comes with its own caviats 🐹.  I went with a simple list at first, but it was quite clear this was not going to cut it. I then used ```AtomicReference``` which was great, but too complex and not a right fit. Eventually I ended up with ```ConcurrentHashMap```.
