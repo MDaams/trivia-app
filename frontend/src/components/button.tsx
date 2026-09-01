@@ -1,7 +1,7 @@
 interface ButtonProps {
-  children: any;
+  children: React.ReactNode;
   className?: string;
-  onClickCallback: Function;
+  onClickCallback: () => void;
   disabled?: boolean;
   isAnswer?: boolean;
   isSubmittedAnswer?: boolean;
