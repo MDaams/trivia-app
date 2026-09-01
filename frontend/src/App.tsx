@@ -18,15 +18,15 @@ function App() {
   const [submittedAnswer, setSubmittedAnswer] = useState<string | undefined>();
 
   useEffect(() => {
+    const loadInitialData = async () => {
+      setLoading(true);
+      const result = await fetchQuestion();
+      setData(result);
+      setLoading(false);
+    };
+
     loadInitialData();
   }, []);
-
-  const loadInitialData = async () => {
-    setLoading(true);
-    const result = await fetchQuestion();
-    setData(result);
-    setLoading(false);
-  };
 
   const selectAnswer = async (id: string, value: string) => {
     const [isCorrect, correctValue, submittedAnswerValue] =
