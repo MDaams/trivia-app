@@ -1,4 +1,7 @@
 import type {
+  CheckAnswersDTO,
+  CheckAnswersResponseDTO,
+  EvaluateAnswer,
   TriviaQuestion,
   TriviaQuestionDTO,
   TriviaQuestionResponseDTO,
@@ -20,21 +23,30 @@ const parseToQuestionAndAnswers = (data: TriviaQuestionDTO): TriviaQuestion => {
   } as TriviaQuestion;
 };
 
-export const fetchQuestion = async (): Promise<TriviaQuestion | undefined> => {
+export const fetchQuestion = async (): Promise<TriviaQuestion> => {
   const endpoint = "questions?amount=1";
-  const response = await fetch(BASE_URL + endpoint);
-  const data: TriviaQuestionResponseDTO = await response.json();
+  try {
+    const response = await fetch(BASE_URL + endpoint);
+    const data: TriviaQuestionResponseDTO = await response.json();
 
-  if (response.status !== 200 || !data || data.results.length == 0) {
-    return undefined;
+    if (!response.ok || !data || !data.results || data.results.length === 0) {
+      throw new Error(
+        data.error || "A problem occurred while loading question.",
+      );
+    }
+
+    return parseToQuestionAndAnswers(data.results[0]);
+  } catch (error) {
+    throw new Error(
+      error instanceof Error ? error.message : "Unable to connect to server.",
+    );
   }
-  return parseToQuestionAndAnswers(data.results[0]);
 };
 
 export async function evaluateAnswer(
   id: string,
   givenAnswer: string,
-): Promise<[boolean, string, string]> {
+): Promise<EvaluateAnswer> {
   const endpoint = "checkAnswers";
 
   const response = await fetch(BASE_URL + endpoint, {
@@ -52,13 +64,20 @@ export async function evaluateAnswer(
     }),
   });
 
-  const data = await response.json();
+  const data: CheckAnswersResponseDTO = await response.json();
 
   if (!response.ok || !data || !data.results || data.results.length === 0) {
-    return [false, "", ""];
+    return {
+      id,
+      error: data.error || "A problem occurred while checking answer.",
+    };
   }
 
-  const result = data.results[0];
+  const result: CheckAnswersDTO = data.results[0];
 
-  return [result.isCorrect, result.correctAnswer, givenAnswer];
+  return {
+    id: result.id,
+    isCorrect: result.isCorrect,
+    correctAnswer: result.correctAnswer,
+  };
 }
