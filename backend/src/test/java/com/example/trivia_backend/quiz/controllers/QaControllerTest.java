@@ -133,7 +133,7 @@ public class QaControllerTest {
                                 .andReturn();
 
                 assertThat(response.getResponse().getContentAsString())
-                                .contains("Something went wrong during evaluation of answer.");
+                                .contains("Something went wrong on the server.");
         }
 
         @Test

@@ -3,6 +3,8 @@ package com.example.trivia_backend.quiz.records;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.trivia_backend.quiz.dtos.questions.TriviaQuestionResponseDTO;
+
 public record TriviaQuestion(
         UUID id,
         String question,
@@ -20,5 +22,9 @@ public record TriviaQuestion(
 
     public boolean isEqual(String compareTo) {
         return question.equals(compareTo);
+    }
+
+    public TriviaQuestionResponseDTO toDTO() {
+        return new TriviaQuestionResponseDTO(id.toString(), question, possibleAnswers);
     }
 }
