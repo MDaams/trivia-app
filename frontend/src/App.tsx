@@ -5,7 +5,7 @@ import { Button } from "./components/button";
 import { evaluateAnswer, fetchQuestion } from "./Api";
 import type { TriviaQuestion, EvaluateAnswer } from "./types";
 
-// This adds a short delay so the loading skeleton is shown more briefly to prevent stuttering. 
+// This adds a short delay so the loading skeleton is shown more briefly to prevent stuttering.
 // It combines a promise (in this case the api calls) with a short delay.
 const withMinimumDelay = async <T,>(
   promise: Promise<T>,
@@ -140,7 +140,6 @@ function App() {
           onSelectAnswer={selectAnswer}
           onNextQuestion={fetchNextQuestion}
           onRetry={handleRetry}
-          isLoading={loading}
         />
       </div>
     );
