@@ -17,76 +17,238 @@ describe("QuestionForm", () => {
     cleanup();
   });
 
-  it("should render all possible answers", () => {
-    render(
-      <QuestionForm
-        triviaQuestion={mockQuestion}
-        answerGiven={false}
-        onSelectAnswer={vi.fn()}
-        onNextQuestion={vi.fn()}
-      />,
-    );
+  describe("Initial State - No Answer Given", () => {
+    it("should render the question text", () => {
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={false}
+          onSelectAnswer={vi.fn()}
+          onNextQuestion={vi.fn()}
+        />,
+      );
 
-    expect(screen.getByText("London")).toBeDefined();
-    expect(screen.getByText("Paris")).toBeDefined();
-    expect(screen.getByText("Berlin")).toBeDefined();
-    expect(screen.getByText("Madrid")).toBeDefined();
-  });
-
-  it("should call onSelectAnswer with correct id and value when an answer button is clicked", () => {
-    const handleSelectAnswer = vi.fn();
-
-    render(
-      <QuestionForm
-        triviaQuestion={mockQuestion}
-        answerGiven={false}
-        onSelectAnswer={handleSelectAnswer}
-        onNextQuestion={vi.fn()}
-      />,
-    );
-
-    const londonButton = screen.getAllByRole("button", { name: "London" })[0];
-    fireEvent.click(londonButton);
-
-    expect(handleSelectAnswer).toHaveBeenCalledTimes(1);
-    expect(handleSelectAnswer).toHaveBeenCalledWith("123-abc-uuid", "London");
-  });
-
-  it("should show the next question button and success text when answer is correct", () => {
-    render(
-      <QuestionForm
-        triviaQuestion={mockQuestion}
-        answerGiven={true}
-        hasCorrectAnswer={true}
-        correctAnswerValue="Paris"
-        submittedAnswer="Paris"
-        onSelectAnswer={vi.fn()}
-        onNextQuestion={vi.fn()}
-      />,
-    );
-
-    const nextButton = screen.getByRole("button", {
-      name: /Amazing! Next Question/i,
+      expect(screen.getByText("What is the capital of France?")).toBeDefined();
     });
-    expect(nextButton).toBeDefined();
+
+    it("should render all possible answers", () => {
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={false}
+          onSelectAnswer={vi.fn()}
+          onNextQuestion={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByText("London")).toBeDefined();
+      expect(screen.getByText("Paris")).toBeDefined();
+      expect(screen.getByText("Berlin")).toBeDefined();
+      expect(screen.getByText("Madrid")).toBeDefined();
+    });
+
+    it("should have answer buttons enabled when no answer is given", () => {
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={false}
+          onSelectAnswer={vi.fn()}
+          onNextQuestion={vi.fn()}
+        />,
+      );
+
+      const buttons = screen.getAllByRole("button").slice(0, 4);
+      buttons.forEach((button) => {
+        expect(button.hasAttribute("disabled")).toBe(false);
+      });
+    });
+
+    it("should have invisible next question button", () => {
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={false}
+          onSelectAnswer={vi.fn()}
+          onNextQuestion={vi.fn()}
+        />,
+      );
+
+      const nextButton = screen.getByRole("button", {
+        name: /Next Question/i,
+      });
+      expect(nextButton.classList.contains("invisible")).toBe(true);
+    });
+
+    it("should call onSelectAnswer with correct id and value when an answer button is clicked", () => {
+      const handleSelectAnswer = vi.fn();
+
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={false}
+          onSelectAnswer={handleSelectAnswer}
+          onNextQuestion={vi.fn()}
+        />,
+      );
+
+      const londonButton = screen.getByText("London");
+      fireEvent.click(londonButton);
+
+      expect(handleSelectAnswer).toHaveBeenCalledTimes(1);
+      expect(handleSelectAnswer).toHaveBeenCalledWith("123-abc-uuid", "London");
+    });
   });
 
-  it("should show next question button when answer is given", () => {
-    render(
-      <QuestionForm
-        triviaQuestion={mockQuestion}
-        answerGiven={true}
-        hasCorrectAnswer={true}
-        correctAnswerValue="Paris"
-        submittedAnswer="Paris"
-        onSelectAnswer={vi.fn()}
-        onNextQuestion={vi.fn()}
-      />,
-    );
+  describe("Correct Answer State", () => {
+    it("should show Amazing! text when answer is correct", () => {
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={true}
+          hasCorrectAnswer={true}
+          correctAnswerValue="Paris"
+          submittedAnswer="Paris"
+          onSelectAnswer={vi.fn()}
+          onNextQuestion={vi.fn()}
+        />,
+      );
 
-    const nextButton = screen.getByRole("button", {
-      name: /Amazing! Next Question/i,
+      const nextButton = screen.getByRole("button", {
+        name: /Amazing! Next Question/i,
+      });
+      expect(nextButton).toBeDefined();
     });
-    expect(nextButton).toBeDefined();
+
+    it("should have visible next question button", () => {
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={true}
+          hasCorrectAnswer={true}
+          correctAnswerValue="Paris"
+          submittedAnswer="Paris"
+          onSelectAnswer={vi.fn()}
+          onNextQuestion={vi.fn()}
+        />,
+      );
+
+      const nextButton = screen.getByRole("button", {
+        name: /Amazing! Next Question/i,
+      });
+      expect(nextButton.classList.contains("invisible")).toBe(false);
+    });
+
+    it("should have answer buttons disabled when answer is given", () => {
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={true}
+          hasCorrectAnswer={true}
+          correctAnswerValue="Paris"
+          submittedAnswer="Paris"
+          onSelectAnswer={vi.fn()}
+          onNextQuestion={vi.fn()}
+        />,
+      );
+
+      const buttons = screen.getAllByRole("button").slice(0, 4);
+      buttons.forEach((button) => {
+        expect(button.hasAttribute("disabled")).toBe(true);
+      });
+    });
+
+    it("should call onNextQuestion when next button is clicked", () => {
+      const handleNextQuestion = vi.fn();
+
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={true}
+          hasCorrectAnswer={true}
+          correctAnswerValue="Paris"
+          submittedAnswer="Paris"
+          onSelectAnswer={vi.fn()}
+          onNextQuestion={handleNextQuestion}
+        />,
+      );
+
+      const nextButton = screen.getByRole("button", {
+        name: /Amazing! Next Question/i,
+      });
+      fireEvent.click(nextButton);
+
+      expect(handleNextQuestion).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("Incorrect Answer State", () => {
+    it("should show Aww! text when answer is incorrect", () => {
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={true}
+          hasCorrectAnswer={false}
+          correctAnswerValue="Paris"
+          submittedAnswer="London"
+          onSelectAnswer={vi.fn()}
+          onNextQuestion={vi.fn()}
+        />,
+      );
+
+      const nextButton = screen.getByRole("button", {
+        name: /Aww! Next Question/i,
+      });
+      expect(nextButton).toBeDefined();
+    });
+
+    it("should have visible next question button", () => {
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={true}
+          hasCorrectAnswer={false}
+          correctAnswerValue="Paris"
+          submittedAnswer="London"
+          onSelectAnswer={vi.fn()}
+          onNextQuestion={vi.fn()}
+        />,
+      );
+
+      const nextButton = screen.getByRole("button", {
+        name: /Aww! Next Question/i,
+      });
+      expect(nextButton.classList.contains("invisible")).toBe(false);
+    });
+
+    it("should have answer buttons disabled when answer is given", () => {
+      render(
+        <QuestionForm
+          triviaQuestion={mockQuestion}
+          question="What is the capital of France?"
+          answerGiven={true}
+          hasCorrectAnswer={false}
+          correctAnswerValue="Paris"
+          submittedAnswer="London"
+          onSelectAnswer={vi.fn()}
+          onNextQuestion={vi.fn()}
+        />,
+      );
+
+      const buttons = screen.getAllByRole("button").slice(0, 4);
+      buttons.forEach((button) => {
+        expect(button.hasAttribute("disabled")).toBe(true);
+      });
+    });
   });
 });

@@ -4,6 +4,7 @@ import { QuestionForm } from "./components/questionForm";
 import { Button } from "./components/button";
 import { evaluateAnswer, fetchQuestion } from "./Api";
 import type { TriviaQuestion, EvaluateAnswer } from "./types";
+import { ScoreBoard } from "./components/scoreBoard";
 
 // This adds a short delay so the loading skeleton is shown more briefly to prevent stuttering.
 // It combines a promise (in this case the api calls) with a short delay.
@@ -37,6 +38,11 @@ function App() {
     string | undefined
   >();
 
+  const [totalAmountOfAnsweredQuestions, setTotalAmountOfAnsweredQuestions] =
+    useState<number>(0);
+  const [numberOfCorrectQuestions, setNumberOfCorrectQuestions] =
+    useState<number>(0);
+
   const loadQuestion = async () => {
     try {
       const result = await withMinimumDelay(fetchQuestion());
@@ -57,6 +63,8 @@ function App() {
       setLoading(true);
       await loadQuestion();
       setLoading(false);
+      setTotalAmountOfAnsweredQuestions(0);
+      setNumberOfCorrectQuestions(0);
     };
 
     loadInitialData();
@@ -76,6 +84,10 @@ function App() {
       }
 
       if (data.isCorrect !== undefined && data.correctAnswer !== undefined) {
+        if (data.isCorrect) {
+          setNumberOfCorrectQuestions(numberOfCorrectQuestions + 1);
+        }
+        setTotalAmountOfAnsweredQuestions(totalAmountOfAnsweredQuestions + 1);
         setHasCorrectAnswer(data.isCorrect);
         setCorrectAnswerValue(data.correctAnswer);
         setSubmittedAnswer(value);
@@ -112,35 +124,37 @@ function App() {
   };
 
   const generateContent = () => {
-    if (loading) return <QASkeleton />;
-
-    if (!data) {
-      return (
-        <div className="flex flex-col items-center gap-6 text-center">
-          <div className="text-lg font-semibold text-red-600">
-            Failed to load question
-          </div>
-          <Button onClickCallback={handleRetry}>Try Again</Button>
-        </div>
-      );
-    }
-
     return (
-      <div className="flex flex-col items-center gap-6 text-center">
-        <div className="text-xl font-semibold">
-          <span>{data.question}</span>
+      <div className="flex flex-col items-center">
+        <div>
+          <ScoreBoard
+            numberOfTotalAnsweredQuestions={totalAmountOfAnsweredQuestions}
+            numberOfCorrectQuestions={numberOfCorrectQuestions}
+          />
         </div>
 
-        <QuestionForm
-          triviaQuestion={data}
-          answerGiven={answerGiven}
-          correctAnswerValue={correctAnswerValue}
-          submittedAnswer={submittedAnswer}
-          hasCorrectAnswer={hasCorrectAnswer}
-          onSelectAnswer={selectAnswer}
-          onNextQuestion={fetchNextQuestion}
-          onRetry={handleRetry}
-        />
+        {loading ? (
+          <QASkeleton />
+        ) : !data ? (
+          <>
+            <div className="text-lg font-semibold text-red-600">
+              Failed to load question
+            </div>
+            <Button onClickCallback={handleRetry}>Try Again</Button>
+          </>
+        ) : (
+          <QuestionForm
+            triviaQuestion={data}
+            answerGiven={answerGiven}
+            correctAnswerValue={correctAnswerValue}
+            submittedAnswer={submittedAnswer}
+            hasCorrectAnswer={hasCorrectAnswer}
+            onSelectAnswer={selectAnswer}
+            onNextQuestion={fetchNextQuestion}
+            onRetry={handleRetry}
+            question={data.question}
+          />
+        )}
       </div>
     );
   };

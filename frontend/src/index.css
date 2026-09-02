@@ -2,16 +2,8 @@
 
 :root {
   --text: #6b6375;
-  --text-h: #08060d;
   --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
   --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -34,4 +26,51 @@
 
 body {
   margin: 0;
+}
+
+.pulse-subtle {
+  transition: box-shadow 0.6s ease-out, color 0.2s ease-out, background-color 0.5s ease-out, border-color 0.5s ease-out;
+}
+
+.pulse-subtle:not(:disabled):hover {
+  box-shadow: 0 0 12px rgba(170, 59, 255, 0.3);
+  color: var(--accent);
+}
+
+.pulse-subtle:disabled {
+  pointer-events: none;
+}
+
+.pulse-medium {
+  transition: transform 0.4s ease-out;
+}
+
+.pulse-medium:not(:disabled):hover {
+  transform: scale(1.03);
+}
+
+.pulse-medium:not(:disabled):active {
+  transform: scale(1.01);
+}
+
+.pulse-medium:disabled {
+  pointer-events: none;
+}
+
+.pulse-premium {
+  transition: background-color 0.5s ease-out, color 0.2s ease-out;
+  position: relative;
+}
+
+.pulse-premium:not(:disabled):hover {
+  background-color: rgba(170, 59, 255, 0.08);
+  color: var(--accent);
+}
+
+.pulse-premium:not(:disabled):active {
+  transform: scale(1.03);
+}
+
+.pulse-premium:disabled {
+  pointer-events: none;
 }

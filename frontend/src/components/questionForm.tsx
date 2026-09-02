@@ -1,4 +1,5 @@
 import { Button } from "./button";
+import { AnswerButton } from "./answerButton";
 import type { TriviaQuestion } from "../types";
 
 interface QuestionFormProps {
@@ -10,6 +11,7 @@ interface QuestionFormProps {
   onNextQuestion: () => void;
   hasCorrectAnswer?: boolean;
   onRetry?: () => void;
+  question: string;
 }
 
 export function QuestionForm({
@@ -20,6 +22,7 @@ export function QuestionForm({
   onSelectAnswer,
   onNextQuestion,
   hasCorrectAnswer,
+  question,
 }: QuestionFormProps) {
   const { id, possibleAnswers: answers } = triviaQuestion;
 
@@ -31,64 +34,30 @@ export function QuestionForm({
   const shouldShowColors = answerGiven;
 
   return (
-    <div className="grid grid-rows-2">
-      <div className="flex flex-col gap-8">
-        <div>
-          <Button
-            isSubmittedAnswer={
-              shouldShowColors && isSubmittedAnswer(answers[0])
-            }
-            isAnswer={shouldShowColors && isAnswer(answers[0])}
+    <div className="grid grid-rows-3 h-120 gap-2 justify-items-center">
+      <div className="text-xl font-semibold flex items-center">
+        <span>{question}</span>
+      </div>
+      <div className="flex flex-col gap-2 justify-center items-center w-full">
+        {answers.map((answer) => (
+          <AnswerButton
+            key={answer}
+            isSubmittedAnswer={shouldShowColors && isSubmittedAnswer(answer)}
+            isAnswer={shouldShowColors && isAnswer(answer)}
             disabled={answerGiven}
-            onClickCallback={() => onSelectAnswer(id, answers[0])}
-            className="mr-8"
+            onClickCallback={() => onSelectAnswer(id, answer)}
           >
-            {answers[0]}
-          </Button>
-          <Button
-            isSubmittedAnswer={
-              shouldShowColors && isSubmittedAnswer(answers[1])
-            }
-            isAnswer={shouldShowColors && isAnswer(answers[1])}
-            disabled={answerGiven}
-            onClickCallback={() => onSelectAnswer(id, answers[1])}
-          >
-            {answers[1]}
-          </Button>
-        </div>
-
-        {answers.length > 2 && (
-          <div>
-            <Button
-              isSubmittedAnswer={
-                shouldShowColors && isSubmittedAnswer(answers[2])
-              }
-              isAnswer={shouldShowColors && isAnswer(answers[2])}
-              disabled={answerGiven}
-              onClickCallback={() => onSelectAnswer(id, answers[2])}
-              className="mr-8"
-            >
-              {answers[2]}
-            </Button>
-            <Button
-              isSubmittedAnswer={
-                shouldShowColors && isSubmittedAnswer(answers[3])
-              }
-              isAnswer={shouldShowColors && isAnswer(answers[3])}
-              disabled={answerGiven}
-              onClickCallback={() => onSelectAnswer(id, answers[3])}
-            >
-              {answers[3]}
-            </Button>
-          </div>
-        )}
+            {answer}
+          </AnswerButton>
+        ))}
       </div>
 
-      {answerGiven && (
-        <Button className="mt-2 h-12" onClickCallback={onNextQuestion}>
-          {answerEvaluation} Next Question
-        </Button>
-      )}
+      <Button
+        className={`mt-8 w-120 ${!answerGiven ? "invisible" : ""}`}
+        onClickCallback={onNextQuestion}
+      >
+        {answerEvaluation} Next Question
+      </Button>
     </div>
   );
 }
