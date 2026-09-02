@@ -47,6 +47,7 @@ npm run test
 ```
 docker compose up --build
 ```
+Available in the browser at ```http://localhost:80```.
 
 ## Documentation
 
