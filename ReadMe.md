@@ -1,45 +1,55 @@
-# Tech stack
-Frontend: React (Vite)
-Backend Java (Spring boot)
+# Trivia App
 
-# Documentation
-## Decisions and project architecture
-Can be found in the ```/docs``` directory.
+## Tech Stack
+- **Frontend**: React (Vite)
+- **Backend**: Java (Spring Boot)
 
-## API documentation
-Start the backend following ```Run Dev``` steps and go to ```http://localhost:8080/swagger-ui/index.html``` in your browser.
+## Quick Start
 
-# Starting local development environment
-- Clone the repository
-- Install the prerequisuites
-- Run ```npm install```
-- Follow the ```Run dev``` steps
-
-## Prerequisites
+### Prerequisites
 - **Node.js**: 18+ (for frontend development)
 - **Java**: 17+ (backend uses Java 17)
 - **Maven**: 3.6+ (included with mvnw wrapper)
 
-## Run local environment
-### Start backend
-Execute ```.\mvnw.cmd spring-boot:run```. 
-Accesible at ```http://localhost:8080```.
+### Local Development
 
-### Start frontend
-Execute ```npm run dev```.
-Accesible at ```http://localhost:5173```.
+#### Start Backend
+```
+.\mvnw.cmd spring-boot:run
+```
+Accessible at `http://localhost:8080`
 
-## Unit tests
-### Backend
-```.\mvnw clean test```
+#### Start Frontend
+```
+npm install
+npm run dev
+```
+Accessible at `http://localhost:5173`
 
-### Frontend
-```npm run test```
+### Running Tests
 
-# Starting Staging
+#### Backend
+```
+.\mvnw clean test
+```
 
-## Prerequisites
-- **Docker & Docker Compose**: 20.10+ (for staging with docker-compose)
+#### Frontend
+```
+npm run test
+```
 
-## Docker compose
-```docker compose up --build```
+## Staging
+
+### Prerequisites
+- **Docker & Docker Compose**: 20.10+
+
+### Run with Docker Compose
+```
+docker compose up --build
+```
+
+## Documentation
+
+- **Architecture & Decisions**: See `/docs` directory
+- **API Documentation**: Start the backend and visit `http://localhost:8080/swagger-ui/index.html`
+- **Detailed Docs**: Backend.md, Frontend.md, and architecture diagrams in `/docs`
