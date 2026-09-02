@@ -38,7 +38,7 @@ function App() {
     string | undefined
   >();
 
-  const [totalAmountOfQuestions, setTotalAmountOfQuestions] =
+  const [totalAmountOfAnsweredQuestions, setTotalAmountOfAnsweredQuestions] =
     useState<number>(0);
   const [numberOfCorrectQuestions, setNumberOfCorrectQuestions] =
     useState<number>(0);
@@ -63,7 +63,7 @@ function App() {
       setLoading(true);
       await loadQuestion();
       setLoading(false);
-      setTotalAmountOfQuestions(1);
+      setTotalAmountOfAnsweredQuestions(0);
       setNumberOfCorrectQuestions(0);
     };
 
@@ -87,6 +87,7 @@ function App() {
         if (data.isCorrect) {
           setNumberOfCorrectQuestions(numberOfCorrectQuestions + 1);
         }
+        setTotalAmountOfAnsweredQuestions(totalAmountOfAnsweredQuestions + 1);
         setHasCorrectAnswer(data.isCorrect);
         setCorrectAnswerValue(data.correctAnswer);
         setSubmittedAnswer(value);
@@ -98,7 +99,6 @@ function App() {
   };
 
   const fetchNextQuestion = async () => {
-    setTotalAmountOfQuestions(totalAmountOfQuestions + 1);
     setLoading(true);
     setAnswerGiven(false);
     setHasCorrectAnswer(undefined);
@@ -128,33 +128,33 @@ function App() {
       <div className="flex flex-col items-center">
         <div>
           <ScoreBoard
-            numberOfTotalAnsweredQuestions={totalAmountOfQuestions}
+            numberOfTotalAnsweredQuestions={totalAmountOfAnsweredQuestions}
             numberOfCorrectQuestions={numberOfCorrectQuestions}
           />
         </div>
 
-          {loading ? (
-            <QASkeleton />
-          ) : !data ? (
-            <>
-              <div className="text-lg font-semibold text-red-600">
-                Failed to load question
-              </div>
-              <Button onClickCallback={handleRetry}>Try Again</Button>
-            </>
-          ) : (
-            <QuestionForm
-              triviaQuestion={data}
-              answerGiven={answerGiven}
-              correctAnswerValue={correctAnswerValue}
-              submittedAnswer={submittedAnswer}
-              hasCorrectAnswer={hasCorrectAnswer}
-              onSelectAnswer={selectAnswer}
-              onNextQuestion={fetchNextQuestion}
-              onRetry={handleRetry}
-              question={data.question}
-            />
-          )}
+        {loading ? (
+          <QASkeleton />
+        ) : !data ? (
+          <>
+            <div className="text-lg font-semibold text-red-600">
+              Failed to load question
+            </div>
+            <Button onClickCallback={handleRetry}>Try Again</Button>
+          </>
+        ) : (
+          <QuestionForm
+            triviaQuestion={data}
+            answerGiven={answerGiven}
+            correctAnswerValue={correctAnswerValue}
+            submittedAnswer={submittedAnswer}
+            hasCorrectAnswer={hasCorrectAnswer}
+            onSelectAnswer={selectAnswer}
+            onNextQuestion={fetchNextQuestion}
+            onRetry={handleRetry}
+            question={data.question}
+          />
+        )}
       </div>
     );
   };

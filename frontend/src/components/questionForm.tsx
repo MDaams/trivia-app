@@ -34,64 +34,26 @@ export function QuestionForm({
   const shouldShowColors = answerGiven;
 
   return (
-    <div className="grid grid-rows-3 h-80 gap-0 justify-items-center">
+    <div className="grid grid-rows-3 h-120 gap-2 justify-items-center">
       <div className="text-xl font-semibold flex items-center">
         <span>{question}</span>
       </div>
       <div className="flex flex-col gap-2 justify-center items-center w-full">
-        <div>
+        {answers.map((answer) => (
           <AnswerButton
-            isSubmittedAnswer={
-              shouldShowColors && isSubmittedAnswer(answers[0])
-            }
-            isAnswer={shouldShowColors && isAnswer(answers[0])}
+            key={answer}
+            isSubmittedAnswer={shouldShowColors && isSubmittedAnswer(answer)}
+            isAnswer={shouldShowColors && isAnswer(answer)}
             disabled={answerGiven}
-            onClickCallback={() => onSelectAnswer(id, answers[0])}
-            className="mr-8"
+            onClickCallback={() => onSelectAnswer(id, answer)}
           >
-            {answers[0]}
+            {answer}
           </AnswerButton>
-          <AnswerButton
-            isSubmittedAnswer={
-              shouldShowColors && isSubmittedAnswer(answers[1])
-            }
-            isAnswer={shouldShowColors && isAnswer(answers[1])}
-            disabled={answerGiven}
-            onClickCallback={() => onSelectAnswer(id, answers[1])}
-          >
-            {answers[1]}
-          </AnswerButton>
-        </div>
-
-        {answers.length > 2 && (
-          <div>
-            <AnswerButton
-              isSubmittedAnswer={
-                shouldShowColors && isSubmittedAnswer(answers[2])
-              }
-              isAnswer={shouldShowColors && isAnswer(answers[2])}
-              disabled={answerGiven}
-              onClickCallback={() => onSelectAnswer(id, answers[2])}
-              className="mr-8"
-            >
-              {answers[2]}
-            </AnswerButton>
-            <AnswerButton
-              isSubmittedAnswer={
-                shouldShowColors && isSubmittedAnswer(answers[3])
-              }
-              isAnswer={shouldShowColors && isAnswer(answers[3])}
-              disabled={answerGiven}
-              onClickCallback={() => onSelectAnswer(id, answers[3])}
-            >
-              {answers[3]}
-            </AnswerButton>
-          </div>
-        )}
+        ))}
       </div>
 
       <Button
-        className={`mt-2 h-12 ${!answerGiven ? "invisible" : ""}`}
+        className={`mt-8 w-120 ${!answerGiven ? "invisible" : ""}`}
         onClickCallback={onNextQuestion}
       >
         {answerEvaluation} Next Question
