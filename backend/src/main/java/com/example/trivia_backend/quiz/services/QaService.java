@@ -1,7 +1,6 @@
 package com.example.trivia_backend.quiz.services;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -22,7 +21,7 @@ import com.example.trivia_backend.quiz.records.TriviaQuestion;
 public class QaService {
     private static final Logger log = LoggerFactory.getLogger(QaService.class);
 
-    private final int MIN_AMOUNT_TO_FETCH_THRESHOLD = 5;
+    private static final int MIN_AMOUNT_TO_FETCH_THRESHOLD = 5;
 
     private final TriviaAPIService triviaAPIService;
 
@@ -47,18 +46,21 @@ public class QaService {
 
     }
 
+    private void validateGivenAnswer(String givenAnswer) {
+        if (givenAnswer == null || givenAnswer.isBlank()) {
+            throw new RuntimeException("Given answer should have a value.");
+        }
+    }
+
     public EvaluationResult evaluateAnswer(String id, String givenAnswer) {
+        validateGivenAnswer(givenAnswer);
+
         TriviaQuestion triviaQuestion = questionPoolMap.get(UUID.fromString(id));
         if (triviaQuestion == null) {
             handleTriviaQuestionNotFound(id);
         }
 
-        if (givenAnswer == null || givenAnswer.isBlank()) {
-            return new EvaluationResult(triviaQuestion.id(), "", false);
-        }
-
         TriviaQuestion removedQuestion = questionPoolMap.remove(triviaQuestion.id());
-
         if (removedQuestion == null) {
             handleTriviaQuestionNotFound(id);
         }
@@ -68,7 +70,7 @@ public class QaService {
     }
 
     long amountOfUnusedQuestions() {
-        return questionPoolMap.values().stream().filter(q -> !q.isPresented()).count();
+        return questionPoolMap.values().stream().filter(TriviaQuestion::canBeUsed).count();
     }
 
     public List<TriviaQuestion> getTriviaQuestions(int amount) {
@@ -89,12 +91,13 @@ public class QaService {
 
     private boolean questionValueExists(String questionValue) {
         return questionPoolMap.values().stream()
-                .anyMatch(question -> question.question().equals(questionValue));
+                .anyMatch(q -> q.isEqual(questionValue));
     }
 
     private void sanityCheck(List<TriviaQuestion> selectedQuestions) {
         if (selectedQuestions.isEmpty()) {
-            log.warn("Output is empty. It might be because the QuestionPool is empty. Handling gracefully.");
+            log.warn("Output of getQuestions is empty. Usable questions: {}. Total questions in pool: {}.",
+                    amountOfUnusedQuestions(), questionPoolMap.size());
         }
     }
 
@@ -127,21 +130,8 @@ public class QaService {
     }
 
     private void handleTriviaQuestionNotFound(String id) {
-        log.error("Lookup for question failed. Requested ID: {}", id);
+        log.warn("Lookup for question failed. Requested ID: {}", id);
         throw new QuestionNotFoundException("Question not found.");
-    }
-
-    private String parseBooleanToHumanReadable(String text) {
-        if (text.toLowerCase().equals("true")) {
-            return "Yes";
-        } else if (text.toLowerCase().equals("false")) {
-            return "No";
-        }
-        return text;
-    }
-
-    private boolean isTextBoolean(String text) {
-        return text.toLowerCase().equals("true") || text.toLowerCase().equals("false");
     }
 
     private void fetchTriviaAPIQuestions() {
@@ -150,37 +140,18 @@ public class QaService {
         try {
             responseDTO = triviaAPIService.getQuestions();
         } catch (Exception e) {
-            log.error("Fetching of external Trivia questions failed. Error: {}", e.getMessage());
+            log.error("Fetching of external Trivia questions failed. {}", e.getMessage(), e);
             return;
         }
 
-        for (TriviaAPIQuestion triviaQuestion : responseDTO.results()) {
-            this.addTriviaQuestionToPool(parseDTOToTriviaQuestion(triviaQuestion));
-        }
+        processTriviaAPIQuestions(responseDTO);
     }
 
-    private TriviaQuestion parseDTOToTriviaQuestion(TriviaAPIQuestion triviaAPIQuestion) {
-        List<String> possibleAnswers = new ArrayList<>();
+    private void processTriviaAPIQuestions(TriviaAPIResponseDTO responseDTO) {
+        responseDTO.results().stream()
+                .map(TriviaAPIQuestion::toTriviaQuestion)
+                .forEach(this::addTriviaQuestionToPool);
 
-        for (String answer : triviaAPIQuestion.incorrectAnswers()) {
-            if (isTextBoolean(answer)) {
-                possibleAnswers.add(parseBooleanToHumanReadable(answer));
-            } else {
-                possibleAnswers.add(answer);
-            }
-        }
-
-        String correctAnswer = triviaAPIQuestion.correctAnswer();
-        if (isTextBoolean(correctAnswer)) {
-            correctAnswer = parseBooleanToHumanReadable(correctAnswer);
-        }
-        possibleAnswers.add(correctAnswer);
-
-        Collections.shuffle(possibleAnswers);
-
-        return new TriviaQuestion(UUID.randomUUID(),
-                triviaAPIQuestion.question(),
-                correctAnswer, false, possibleAnswers);
     }
 
     public void clearQuestions() {

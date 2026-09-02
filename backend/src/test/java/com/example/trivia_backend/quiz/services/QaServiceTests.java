@@ -181,9 +181,28 @@ class QaServiceTests {
     @DisplayName("Handles non existing question when evaluating answer")
     void evaluateAnswerShouldHandleNonExistingQuestion() {
         TriviaQuestion question = getFirstQuestion();
-        service.evaluateAnswer(question.id().toString(), null);
+        service.evaluateAnswer(question.id().toString(), "test");
 
-        assertDoesNotThrow(() -> {
+        assertThrows(QuestionNotFoundException.class, () -> {
+            service.evaluateAnswer(question.id().toString(), "test");
+        });
+    }
+
+    @Test
+    @DisplayName("Should throw exception if givenanswer is blank")
+    void evaluateAnswerShouldThrowExceptionBlankGivenAnswer() {
+        TriviaQuestion question = getFirstQuestion();
+
+        assertThrows(RuntimeException.class, () -> {
+            service.evaluateAnswer(question.id().toString(), "");
+        });
+    }
+
+    @Test
+    @DisplayName("Should throw exception if givenanswer is null")
+    void evaluateAnswerShouldThrowExceptionNullGivenAnswer() {
+        TriviaQuestion question = getFirstQuestion();
+        assertThrows(RuntimeException.class, () -> {
             service.evaluateAnswer(question.id().toString(), null);
         });
     }
