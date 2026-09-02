@@ -37,9 +37,9 @@ export const fetchQuestion = async (): Promise<TriviaQuestion> => {
 
     return parseToQuestionAndAnswers(data.results[0]);
   } catch (error) {
-    throw new Error(
-      error instanceof Error ? error.message : "Unable to connect to server.",
-    );
+    const errorMessage: string =
+      error instanceof Error ? error.message : "Unable to connect to server.";
+    throw new Error(errorMessage, {cause: error });
   }
 };
 

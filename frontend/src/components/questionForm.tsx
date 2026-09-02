@@ -10,7 +10,6 @@ interface QuestionFormProps {
   onNextQuestion: () => void;
   hasCorrectAnswer?: boolean;
   onRetry?: () => void;
-  isLoading?: boolean;
 }
 
 export function QuestionForm({
@@ -21,7 +20,6 @@ export function QuestionForm({
   onSelectAnswer,
   onNextQuestion,
   hasCorrectAnswer,
-  isLoading,
 }: QuestionFormProps) {
   const { id, possibleAnswers: answers } = triviaQuestion;
 
