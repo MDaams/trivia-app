@@ -1,4 +1,5 @@
 import { Button } from "./button";
+import { AnswerButton } from "./answerButton";
 import type { TriviaQuestion } from "../types";
 
 interface QuestionFormProps {
@@ -10,6 +11,7 @@ interface QuestionFormProps {
   onNextQuestion: () => void;
   hasCorrectAnswer?: boolean;
   onRetry?: () => void;
+  question: string;
 }
 
 export function QuestionForm({
@@ -20,6 +22,7 @@ export function QuestionForm({
   onSelectAnswer,
   onNextQuestion,
   hasCorrectAnswer,
+  question,
 }: QuestionFormProps) {
   const { id, possibleAnswers: answers } = triviaQuestion;
 
@@ -31,10 +34,13 @@ export function QuestionForm({
   const shouldShowColors = answerGiven;
 
   return (
-    <div className="grid grid-rows-2">
-      <div className="flex flex-col gap-8">
+    <div className="grid grid-rows-3 h-80 gap-0 justify-items-center">
+      <div className="text-xl font-semibold flex items-center">
+        <span>{question}</span>
+      </div>
+      <div className="flex flex-col gap-2 justify-center items-center w-full">
         <div>
-          <Button
+          <AnswerButton
             isSubmittedAnswer={
               shouldShowColors && isSubmittedAnswer(answers[0])
             }
@@ -44,8 +50,8 @@ export function QuestionForm({
             className="mr-8"
           >
             {answers[0]}
-          </Button>
-          <Button
+          </AnswerButton>
+          <AnswerButton
             isSubmittedAnswer={
               shouldShowColors && isSubmittedAnswer(answers[1])
             }
@@ -54,12 +60,12 @@ export function QuestionForm({
             onClickCallback={() => onSelectAnswer(id, answers[1])}
           >
             {answers[1]}
-          </Button>
+          </AnswerButton>
         </div>
 
         {answers.length > 2 && (
           <div>
-            <Button
+            <AnswerButton
               isSubmittedAnswer={
                 shouldShowColors && isSubmittedAnswer(answers[2])
               }
@@ -69,8 +75,8 @@ export function QuestionForm({
               className="mr-8"
             >
               {answers[2]}
-            </Button>
-            <Button
+            </AnswerButton>
+            <AnswerButton
               isSubmittedAnswer={
                 shouldShowColors && isSubmittedAnswer(answers[3])
               }
@@ -79,16 +85,17 @@ export function QuestionForm({
               onClickCallback={() => onSelectAnswer(id, answers[3])}
             >
               {answers[3]}
-            </Button>
+            </AnswerButton>
           </div>
         )}
       </div>
 
-      {answerGiven && (
-        <Button className="mt-2 h-12" onClickCallback={onNextQuestion}>
-          {answerEvaluation} Next Question
-        </Button>
-      )}
+      <Button
+        className={`mt-2 h-12 ${!answerGiven ? "invisible" : ""}`}
+        onClickCallback={onNextQuestion}
+      >
+        {answerEvaluation} Next Question
+      </Button>
     </div>
   );
 }
