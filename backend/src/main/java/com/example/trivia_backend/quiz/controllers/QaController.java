@@ -62,7 +62,7 @@ public class QaController {
     }
 
     private boolean requestIsValid(CheckAnswersRequestDTO request) {
-        return request.answers().stream().allMatch(req -> req.id() != null && req.answer() != null);
+        return request.answers().stream().allMatch(CheckAnswerRequestDTO::isValid);
     }
 
     private ResponseEntity<ApiResponse> gradeAnswers(List<CheckAnswerRequestDTO> answers) {

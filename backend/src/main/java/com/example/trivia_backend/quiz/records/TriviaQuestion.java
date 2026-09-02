@@ -10,11 +10,15 @@ public record TriviaQuestion(
         boolean isPresented,
         List<String> possibleAnswers) {
 
-    public boolean isPresented() {
-        return isPresented;
+    public boolean canBeUsed() {
+        return !isPresented;
     }
 
     public boolean isCorrect(String givenAnswer) {
         return correctAnswer.equals(givenAnswer);
+    }
+
+    public boolean isEqual(String compareTo) {
+        return question.equals(compareTo);
     }
 }

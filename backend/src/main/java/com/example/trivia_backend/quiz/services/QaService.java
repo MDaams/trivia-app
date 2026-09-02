@@ -68,7 +68,7 @@ public class QaService {
     }
 
     long amountOfUnusedQuestions() {
-        return questionPoolMap.values().stream().filter(q -> !q.isPresented()).count();
+        return questionPoolMap.values().stream().filter(TriviaQuestion::canBeUsed).count();
     }
 
     public List<TriviaQuestion> getTriviaQuestions(int amount) {
@@ -89,7 +89,7 @@ public class QaService {
 
     private boolean questionValueExists(String questionValue) {
         return questionPoolMap.values().stream()
-                .anyMatch(question -> question.question().equals(questionValue));
+                .anyMatch(q -> q.isEqual(questionValue));
     }
 
     private void sanityCheck(List<TriviaQuestion> selectedQuestions) {
