@@ -9,6 +9,7 @@ interface QuestionFormProps {
   onSelectAnswer: (id: string, value: string) => void;
   onNextQuestion: () => void;
   hasCorrectAnswer?: boolean;
+  onRetry?: () => void;
 }
 
 export function QuestionForm({
@@ -27,14 +28,17 @@ export function QuestionForm({
     value === submittedAnswer;
 
   const answerEvaluation = hasCorrectAnswer ? "Amazing!" : "Aww!";
+  const shouldShowColors = answerGiven;
 
   return (
     <div className="grid grid-rows-2">
       <div className="flex flex-col gap-8">
         <div>
           <Button
-            isSubmittedAnswer={answerGiven && isSubmittedAnswer(answers[0])}
-            isAnswer={answerGiven && isAnswer(answers[0])}
+            isSubmittedAnswer={
+              shouldShowColors && isSubmittedAnswer(answers[0])
+            }
+            isAnswer={shouldShowColors && isAnswer(answers[0])}
             disabled={answerGiven}
             onClickCallback={() => onSelectAnswer(id, answers[0])}
             className="mr-8"
@@ -42,8 +46,10 @@ export function QuestionForm({
             {answers[0]}
           </Button>
           <Button
-            isSubmittedAnswer={answerGiven && isSubmittedAnswer(answers[1])}
-            isAnswer={answerGiven && isAnswer(answers[1])}
+            isSubmittedAnswer={
+              shouldShowColors && isSubmittedAnswer(answers[1])
+            }
+            isAnswer={shouldShowColors && isAnswer(answers[1])}
             disabled={answerGiven}
             onClickCallback={() => onSelectAnswer(id, answers[1])}
           >
@@ -54,8 +60,10 @@ export function QuestionForm({
         {answers.length > 2 && (
           <div>
             <Button
-              isSubmittedAnswer={answerGiven && isSubmittedAnswer(answers[2])}
-              isAnswer={answerGiven && isAnswer(answers[2])}
+              isSubmittedAnswer={
+                shouldShowColors && isSubmittedAnswer(answers[2])
+              }
+              isAnswer={shouldShowColors && isAnswer(answers[2])}
               disabled={answerGiven}
               onClickCallback={() => onSelectAnswer(id, answers[2])}
               className="mr-8"
@@ -63,8 +71,10 @@ export function QuestionForm({
               {answers[2]}
             </Button>
             <Button
-              isSubmittedAnswer={answerGiven && isSubmittedAnswer(answers[3])}
-              isAnswer={answerGiven && isAnswer(answers[3])}
+              isSubmittedAnswer={
+                shouldShowColors && isSubmittedAnswer(answers[3])
+              }
+              isAnswer={shouldShowColors && isAnswer(answers[3])}
               disabled={answerGiven}
               onClickCallback={() => onSelectAnswer(id, answers[3])}
             >

@@ -70,4 +70,23 @@ describe("QuestionForm", () => {
     });
     expect(nextButton).toBeDefined();
   });
+
+  it("should show next question button when answer is given", () => {
+    render(
+      <QuestionForm
+        triviaQuestion={mockQuestion}
+        answerGiven={true}
+        hasCorrectAnswer={true}
+        correctAnswerValue="Paris"
+        submittedAnswer="Paris"
+        onSelectAnswer={vi.fn()}
+        onNextQuestion={vi.fn()}
+      />,
+    );
+
+    const nextButton = screen.getByRole("button", {
+      name: /Amazing! Next Question/i,
+    });
+    expect(nextButton).toBeDefined();
+  });
 });

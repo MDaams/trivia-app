@@ -14,3 +14,6 @@
 
 # PoC
 Started out with a PoC UI calling the openDB API directly so I could test the limits of the API. Then build the backend and replaced the openDB with this proxy. Because I already had built the frontend I could simply plug in the new proxy by replacing the url. I then started to migrate the logic (decoding HTML, parsing booleans to human readable language, etc..) to the proxy.
+
+# Future improvements
+Test coverage can be expanded with API mocking and how different responses are handled.
