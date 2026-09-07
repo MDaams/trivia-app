@@ -96,9 +96,8 @@ Because one instance hold its own list scaling vertically would be a challenge. 
 
 If we go back to Henk and Anna. When Henk gets a question from instance A and then checks his answer with instance B the question with its unique UUID would not be present on instance B, thus this will result in a ```QuestionNotFoundException```. SQLite would not cut it. For now I will keep this box closed.
 
-## Race condition on fetch
-There is still a race condition possible during the getting of questions, during this the service checks if the question pool is almost empty (size < 5) if Henk and Anna fetch at the same time they could trigger two fetches at the same time. This could be solved with an ```AtomicBoolean``` that is set to True during before starting a fetch and set to False after. Letting Anna wait while Henk is fetching questions. 
+## Using synchronized
 
-This chance however, is quite small and the network-latency with two users make this chance even slimmer. The effect might be that the external API returns a 429, yet this is already handled. If both request go through the result would be that instead of 50, 100 questions get added. This has no impact on the user experience (since both would be waiting even with a boolean that triggers a while or sleep).
+Currently each functions is thread-safe if due to the concurrent hashmap. But cross-operational it is not safe, in other words, when the list is cleared and filled, clearing it could occur after filling it, which results in an empty list. Yet given the scope and the purpose of this demo I pass for now.
 
-Since it would add complexity that does not add much value, I pass for now.
+This could be resolved by applying synchronized to the methods and eventually ending up with multithreading. Which adds its own complexity. If it becomes an issue where cross-operational causes race conditions, I recommend hooking up a database.

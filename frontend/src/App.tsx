@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { QASkeleton } from "./components/qaSkeleton";
 import { QuestionForm } from "./components/questionForm";
-import { Button } from "./components/button";
 import { evaluateAnswer, fetchQuestion } from "./Api";
 import type { TriviaQuestion, EvaluateAnswer } from "./types";
 import { ScoreBoard } from "./components/scoreBoard";
@@ -24,9 +23,6 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   const [answerGiven, setAnswerGiven] = useState(false);
-  const [hasCorrectAnswer, setHasCorrectAnswer] = useState<
-    boolean | undefined
-  >();
   const [correctAnswerValue, setCorrectAnswerValue] = useState<
     string | undefined
   >();
@@ -52,7 +48,6 @@ function App() {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to load question";
       setData(undefined);
-      // Store error state separately if needed, or show in UI
       console.error("Error loading question:", errorMessage);
       return false;
     }
@@ -88,8 +83,6 @@ function App() {
           setNumberOfCorrectQuestions(numberOfCorrectQuestions + 1);
         }
         setTotalAmountOfAnsweredQuestions(totalAmountOfAnsweredQuestions + 1);
-        setHasCorrectAnswer(data.isCorrect);
-        setCorrectAnswerValue(data.correctAnswer);
         setSubmittedAnswer(value);
         setAnswerGiven(true);
       }
@@ -101,7 +94,6 @@ function App() {
   const fetchNextQuestion = async () => {
     setLoading(true);
     setAnswerGiven(false);
-    setHasCorrectAnswer(undefined);
     setCorrectAnswerValue(undefined);
     setSubmittedAnswer(undefined);
 
@@ -125,42 +117,45 @@ function App() {
 
   const generateContent = () => {
     return (
-      <div className="flex flex-col items-center">
-        <div>
+      <div className="flex flex-col items-center justify-between w-full h-screen">
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center w-full">
+            <QASkeleton />
+          </div>
+        ) : !data ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4">
+            <div className="text-lg font-semibold text-red-600">
+              Failed to load question
+            </div>
+            <button onClick={handleRetry}>Try Again</button>
+          </div>
+        ) : (
+          <div className="flex-1 flex items-center justify-center w-full">
+            <QuestionForm
+              triviaQuestion={data}
+              answerGiven={answerGiven}
+              correctAnswerValue={correctAnswerValue}
+              submittedAnswer={submittedAnswer}
+              onSelectAnswer={selectAnswer}
+              onNextQuestion={fetchNextQuestion}
+              onRetry={handleRetry}
+              question={data.question}
+            />
+          </div>
+        )}
+
+        <div className="w-full p-8 right-24">
           <ScoreBoard
             numberOfTotalAnsweredQuestions={totalAmountOfAnsweredQuestions}
             numberOfCorrectQuestions={numberOfCorrectQuestions}
           />
         </div>
-
-        {loading ? (
-          <QASkeleton />
-        ) : !data ? (
-          <>
-            <div className="text-lg font-semibold text-red-600">
-              Failed to load question
-            </div>
-            <Button onClickCallback={handleRetry}>Try Again</Button>
-          </>
-        ) : (
-          <QuestionForm
-            triviaQuestion={data}
-            answerGiven={answerGiven}
-            correctAnswerValue={correctAnswerValue}
-            submittedAnswer={submittedAnswer}
-            hasCorrectAnswer={hasCorrectAnswer}
-            onSelectAnswer={selectAnswer}
-            onNextQuestion={fetchNextQuestion}
-            onRetry={handleRetry}
-            question={data.question}
-          />
-        )}
       </div>
     );
   };
 
   return (
-    <section className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+    <section className="min-h-screen bg-gray-50 p-4">
       {generateContent()}
     </section>
   );

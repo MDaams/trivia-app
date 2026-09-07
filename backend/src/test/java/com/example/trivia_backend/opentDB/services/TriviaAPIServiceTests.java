@@ -19,7 +19,7 @@ import com.example.trivia_backend.opentDB.dtos.TriviaAPIResponseDTO;
 import com.example.trivia_backend.opentDB.exceptions.RateLimitExceededException;
 
 @RestClientTest(TriviaAPIService.class)
-public class TriviaAPIServiceTest {
+public class TriviaAPIServiceTests {
 
     @Autowired
     private TriviaAPIService service;

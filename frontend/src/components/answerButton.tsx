@@ -19,7 +19,7 @@ export const AnswerButton = ({
     <button
       disabled={disabled}
       onClick={() => onClickCallback()}
-      className={`pulse-subtle min-w-100 px-5 py-2.5 text-sm font-medium border rounded-lg focus:z-10 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-150 shadow-xs cursor-pointer  
+      className={`pulse-subtle w-120 px-5 py-2.5 text-sm font-medium border rounded-lg focus:z-10 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-150 shadow-xs cursor-pointer  
   ${
     disabled
       ? isAnswer
