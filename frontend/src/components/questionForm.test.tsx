@@ -78,7 +78,7 @@ describe("QuestionForm", () => {
       );
 
       const nextButton = screen.getByRole("button", {
-        name: /Next Question/i,
+        name: /Next/i,
       });
       expect(nextButton.classList.contains("invisible")).toBe(true);
     });
@@ -105,13 +105,12 @@ describe("QuestionForm", () => {
   });
 
   describe("Correct Answer State", () => {
-    it("should show Amazing! text when answer is correct", () => {
+    it("should show Next button when answer is correct", () => {
       render(
         <QuestionForm
           triviaQuestion={mockQuestion}
           question="What is the capital of France?"
           answerGiven={true}
-          hasCorrectAnswer={true}
           correctAnswerValue="Paris"
           submittedAnswer="Paris"
           onSelectAnswer={vi.fn()}
@@ -120,7 +119,7 @@ describe("QuestionForm", () => {
       );
 
       const nextButton = screen.getByRole("button", {
-        name: /Amazing! Next Question/i,
+        name: /Next/i,
       });
       expect(nextButton).toBeDefined();
     });
@@ -131,7 +130,6 @@ describe("QuestionForm", () => {
           triviaQuestion={mockQuestion}
           question="What is the capital of France?"
           answerGiven={true}
-          hasCorrectAnswer={true}
           correctAnswerValue="Paris"
           submittedAnswer="Paris"
           onSelectAnswer={vi.fn()}
@@ -140,7 +138,7 @@ describe("QuestionForm", () => {
       );
 
       const nextButton = screen.getByRole("button", {
-        name: /Amazing! Next Question/i,
+        name: /Next/i,
       });
       expect(nextButton.classList.contains("invisible")).toBe(false);
     });
@@ -151,7 +149,6 @@ describe("QuestionForm", () => {
           triviaQuestion={mockQuestion}
           question="What is the capital of France?"
           answerGiven={true}
-          hasCorrectAnswer={true}
           correctAnswerValue="Paris"
           submittedAnswer="Paris"
           onSelectAnswer={vi.fn()}
@@ -173,7 +170,6 @@ describe("QuestionForm", () => {
           triviaQuestion={mockQuestion}
           question="What is the capital of France?"
           answerGiven={true}
-          hasCorrectAnswer={true}
           correctAnswerValue="Paris"
           submittedAnswer="Paris"
           onSelectAnswer={vi.fn()}
@@ -182,7 +178,7 @@ describe("QuestionForm", () => {
       );
 
       const nextButton = screen.getByRole("button", {
-        name: /Amazing! Next Question/i,
+        name: /Next/i,
       });
       fireEvent.click(nextButton);
 
@@ -191,13 +187,12 @@ describe("QuestionForm", () => {
   });
 
   describe("Incorrect Answer State", () => {
-    it("should show Aww! text when answer is incorrect", () => {
+    it("should show Next button when answer is incorrect", () => {
       render(
         <QuestionForm
           triviaQuestion={mockQuestion}
           question="What is the capital of France?"
           answerGiven={true}
-          hasCorrectAnswer={false}
           correctAnswerValue="Paris"
           submittedAnswer="London"
           onSelectAnswer={vi.fn()}
@@ -206,7 +201,7 @@ describe("QuestionForm", () => {
       );
 
       const nextButton = screen.getByRole("button", {
-        name: /Aww! Next Question/i,
+        name: /Next/i,
       });
       expect(nextButton).toBeDefined();
     });
@@ -217,7 +212,6 @@ describe("QuestionForm", () => {
           triviaQuestion={mockQuestion}
           question="What is the capital of France?"
           answerGiven={true}
-          hasCorrectAnswer={false}
           correctAnswerValue="Paris"
           submittedAnswer="London"
           onSelectAnswer={vi.fn()}
@@ -226,7 +220,7 @@ describe("QuestionForm", () => {
       );
 
       const nextButton = screen.getByRole("button", {
-        name: /Aww! Next Question/i,
+        name: /Next/i,
       });
       expect(nextButton.classList.contains("invisible")).toBe(false);
     });
@@ -237,7 +231,6 @@ describe("QuestionForm", () => {
           triviaQuestion={mockQuestion}
           question="What is the capital of France?"
           answerGiven={true}
-          hasCorrectAnswer={false}
           correctAnswerValue="Paris"
           submittedAnswer="London"
           onSelectAnswer={vi.fn()}
