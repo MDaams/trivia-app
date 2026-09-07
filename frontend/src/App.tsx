@@ -23,9 +23,6 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   const [answerGiven, setAnswerGiven] = useState(false);
-  const [hasCorrectAnswer, setHasCorrectAnswer] = useState<
-    boolean | undefined
-  >();
   const [correctAnswerValue, setCorrectAnswerValue] = useState<
     string | undefined
   >();
@@ -51,7 +48,6 @@ function App() {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to load question";
       setData(undefined);
-      // Store error state separately if needed, or show in UI
       console.error("Error loading question:", errorMessage);
       return false;
     }
@@ -87,8 +83,6 @@ function App() {
           setNumberOfCorrectQuestions(numberOfCorrectQuestions + 1);
         }
         setTotalAmountOfAnsweredQuestions(totalAmountOfAnsweredQuestions + 1);
-        setHasCorrectAnswer(data.isCorrect);
-        setCorrectAnswerValue(data.correctAnswer);
         setSubmittedAnswer(value);
         setAnswerGiven(true);
       }
@@ -100,7 +94,6 @@ function App() {
   const fetchNextQuestion = async () => {
     setLoading(true);
     setAnswerGiven(false);
-    setHasCorrectAnswer(undefined);
     setCorrectAnswerValue(undefined);
     setSubmittedAnswer(undefined);
 

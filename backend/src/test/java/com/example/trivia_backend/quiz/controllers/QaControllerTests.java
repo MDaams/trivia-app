@@ -32,7 +32,7 @@ import com.example.trivia_backend.quiz.services.QaService;
 import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(QaController.class)
-public class QaControllerTest {
+public class QaControllerTests {
         @Autowired
         private MockMvc mockClient;
 
