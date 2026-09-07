@@ -84,6 +84,7 @@ function App() {
         }
         setTotalAmountOfAnsweredQuestions(totalAmountOfAnsweredQuestions + 1);
         setSubmittedAnswer(value);
+        setCorrectAnswerValue(data.correctAnswer);
         setAnswerGiven(true);
       }
     } catch (error) {
